@@ -1,4 +1,4 @@
-type SidebarItem = {
+export type SidebarItem = {
     title: string;
     url: string;
     items?: SidebarItem[];
@@ -12,6 +12,10 @@ export const sidebarItemList: SidebarItem[] = [
             {
                 title: "Post List",
                 url: "/dashboard/post/list",
+            },
+            {
+                title: "Create Post",
+                url: "/dashboard/post/create",
             }
         ]
     },

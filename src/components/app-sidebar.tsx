@@ -13,13 +13,13 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar"
 import Image from "next/image";
-import {useAuth} from "@/hooks/useAuth";
 import {sidebarItemList} from "@/config/sidebarItemList";
 
 import {usePathname} from "next/navigation";
+import {useAuthContext} from "@/context/AuthContext";
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-    const {user} = useAuth();
+    const {user} = useAuthContext();
     const pathname = usePathname();
 
     return (

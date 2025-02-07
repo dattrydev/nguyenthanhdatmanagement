@@ -1,6 +1,14 @@
-import {UUID} from "node:crypto";
+import {PagingResponse} from "@/types/api-response";
 
 export interface Category {
-    id: UUID;
+    id: string;
+    name: string;
+}
+
+export interface CategoryListResponse extends PagingResponse {
+    categories: Category[];
+}
+
+export interface CreateCategory {
     name: string;
 }

@@ -1,8 +1,5 @@
 "use client";
 
-import {useCallback, useEffect, useState} from "react";
-import {PostList} from "@/types/dashboard/post";
-import {getPostListApi} from "@/api/dashboard/post/post";
 import {columnsConfig} from "@/app/dashboard/post/list/columns-config";
 import * as React from "react";
 import {
@@ -15,20 +12,16 @@ import {
 } from "@tanstack/react-table";
 import {Footer} from "@/app/dashboard/post/list/footer";
 import {DataTable} from "@/components/custom/DataTable";
+import {Header} from "@/app/dashboard/post/list/header";
+import {usePostContext} from "@/context/PostContext";
+import {useMemo} from "react";
 
 export default function Page() {
-    const [postList, setPostList] = useState<PostList[]>([]);
+    const {postList} = usePostContext();
 
-    const fetchPostList = useCallback(async () => {
-        const response = await getPostListApi();
-        if ("posts" in response) {
-            if (Array.isArray(response.posts)) {
-                setPostList(response.posts);
-            } else {
-                console.log("Failed to fetch post list: " + response);
-            }
-        }
-    }, []);
+    const postListData = useMemo(() => {
+        return postList;
+    }, [postList]);
 
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -57,13 +50,10 @@ export default function Page() {
         },
     })
 
-    useEffect(() => {
-        fetchPostList();
-    }, [fetchPostList]);
-
     return (
-        <div>
-            <DataTable columns={columnsConfig} data={postList}/>
+        <div className={"flex flex-col gap-3"}>
+            <Header/>
+            <DataTable columns={columnsConfig} data={postListData}/>
             <Footer table={table}/>
         </div>
     );

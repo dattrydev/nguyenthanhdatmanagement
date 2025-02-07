@@ -22,14 +22,13 @@ import React from "react";
 export default function Layout({children}: { children: React.ReactNode }) {
     const pathname = usePathname();
 
-    // Tìm đường dẫn phù hợp trong sidebarItemList
     let breadcrumbItems: { title: string; url: string }[] = [];
     sidebarItemList.forEach(group => {
         group.items?.forEach(item => {
             if (pathname.startsWith(item.url)) {
                 breadcrumbItems = [
-                    {title: group.title, url: "#"}, // Group level
-                    {title: item.title, url: item.url} // Page level
+                    {title: group.title, url: "#"},
+                    {title: item.title, url: item.url}
                 ];
             }
         });
