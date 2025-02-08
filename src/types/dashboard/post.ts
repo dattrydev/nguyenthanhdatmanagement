@@ -1,6 +1,6 @@
 import {Tag} from "@/types/dashboard/tag";
 import {Category} from "@/types/dashboard/category";
-import {PagingResponse} from "@/types/api-response";
+import {PagingRequest, PagingResponse} from "@/types/api";
 import {z} from "zod";
 
 export enum PostStatus {
@@ -31,6 +31,8 @@ export type PostList = Pick<Post, "title" | "status" | "slug"> & {
     tags_name: string;
 }
 
+export type PostListPagingRequest = Partial<PagingRequest & PostList>;
+
 export interface PostListResponse extends PagingResponse {
     posts: PostList[];
 }
@@ -47,16 +49,15 @@ export const createPostSchema = z.object({
     title: z.string().min(1, "Title is required").optional(),
     content: z.string().min(1, "Content is required").optional(),
     status: z.nativeEnum(PostStatus),
-    category_id: z.string().uuid("Category ID must be a valid UUID"),
+    category_id: z.string().uuid("Category ID must be a valid UUID").optional(),
     tag_ids: z.array(z.string().uuid("Tag ID must be a valid UUID")).optional(),
 });
-
 
 export const validateCreatePost = (data: unknown) => {
     try {
         return createPostSchema.parse(data);
     } catch (error) {
-        console.error("Validation failed", error);
-        throw error;
+        console.log("Validation failed", error);
+        return error;
     }
 };

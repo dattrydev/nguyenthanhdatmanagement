@@ -36,7 +36,7 @@ export const columnsConfig: ColumnDef<PostList>[] = [
         accessorKey: "title",
         header: "Title",
         cell: ({row}) => (
-            <div className="capitalize w-36 line-clamp-1">{row.getValue("title")}</div>
+            <div className="capitalize w-full line-clamp-1">{row.getValue("title")}</div>
         ),
         enableColumnFilter: true,
         filterFn: (row, columnId, value) => {

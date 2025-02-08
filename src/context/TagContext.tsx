@@ -2,7 +2,7 @@
 
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
 import {ErrorResponse} from "@/types/error/error-response";
-import {PagingResponse} from "@/types/api-response";
+import {PagingResponse} from "@/types/api";
 import {Tag} from "@/types/dashboard/tag";
 import {createTagApi, getTagListApi} from "@/api/tag";
 

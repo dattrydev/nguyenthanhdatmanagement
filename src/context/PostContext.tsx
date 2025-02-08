@@ -1,17 +1,20 @@
 "use client";
 
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
-import {CreatePost, Post, PostList} from "@/types/dashboard/post";
-import {getCategoryListApi, createPostApi} from "@/api/post";
+import {CreatePost, Post, PostList, PostListPagingRequest} from "@/types/dashboard/post";
+import {checkUniquePostApi, createPostApi, getPostListApi} from "@/api/post";
 import {ErrorResponse} from "@/types/error/error-response";
-import {PagingResponse} from "@/types/api-response";
+import {PagingResponse} from "@/types/api";
 import {handleError} from "@/utils/handle-error";
 
 interface PostContextType {
     postList: PostList[];
+    postListPagingRequest: PostListPagingRequest;
+    setPostListPagingRequest: (postListPagingRequest: PostListPagingRequest) => void;
     paging: PagingResponse;
 
     getPostList: () => Promise<PostList[] | ErrorResponse>;
+    checkUniquePost: (field: string, value: string) => Promise<boolean>;
     createPost: (createPost: CreatePost) => Promise<Post | ErrorResponse>;
 }
 
@@ -19,6 +22,7 @@ export const PostContext = createContext<PostContextType | undefined>(undefined)
 
 export const PostProvider = ({children}: { children: ReactNode }) => {
     const [postList, setPostList] = useState<PostList[]>([]);
+    const [postListPagingRequest, setPostListPagingRequest] = useState<PostListPagingRequest>({});
     const [paging, setPaging] = useState<PagingResponse>({
         totalPages: 0,
         totalRecords: 0,
@@ -26,13 +30,22 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
     });
 
     const getPostList = useCallback(async () => {
-        const response = await getCategoryListApi();
+        const response = await getPostListApi(postListPagingRequest);
         if ("status" in response) {
             console.error("Error fetching posts:", response.message);
             return response;
         }
         setPostList(response.posts);
         return response.posts;
+    }, []);
+
+    const checkUniquePost = useCallback(async (field: string, value: string): Promise<boolean> => {
+        try {
+            return await checkUniquePostApi(field, value);
+        } catch (error) {
+            console.error("Error in checkUniquePostApi:", error);
+            return false;
+        }
     }, []);
 
     const createPost = useCallback(async (createPost: CreatePost) => {
@@ -57,7 +70,7 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
 
     useEffect(() => {
         const fetchPostList = async () => {
-            const postListPagingResponse = await getCategoryListApi();
+            const postListPagingResponse = await getPostListApi(postListPagingRequest);
             if ("status" in postListPagingResponse) {
                 return;
             }
@@ -70,10 +83,19 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
         };
 
         fetchPostList();
-    }, [getPostList]);
+    }, [getPostList, postListPagingRequest]);
 
     return (
-        <PostContext.Provider value={{postList, paging, getPostList, createPost}}>
+        <PostContext.Provider
+            value={{
+                postList,
+                postListPagingRequest,
+                setPostListPagingRequest,
+                paging,
+                getPostList,
+                checkUniquePost,
+                createPost
+            }}>
             {children}
         </PostContext.Provider>
     );

@@ -1,5 +1,3 @@
-"use client";
-
 import {Editor} from "@tiptap/react";
 import {
     Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
@@ -14,102 +12,106 @@ type Props = {
 export default function Menubar({editor}: Props) {
     if (!editor) return null;
 
+    // Hàm để xử lý sự kiện click vào ảnh để thay đổi kích thước
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const addImage = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.preventDefault(); // Ngừng submit form khi thêm hình ảnh
+        event.preventDefault();
         if (!event.target.files) return;
-        const file = event.target.files[0];
 
-        if (file) {
-            // Use the object URL for image preview before upload
-            editor.chain().focus().setImage({src: URL.createObjectURL(file)}).run();
-        }
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const imageUrl = URL.createObjectURL(file);
+
+        editor.chain().focus().setImage({src: imageUrl}).run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const addLink = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi thêm liên kết
-        const url = prompt("Nhập URL liên kết:");
+        event.preventDefault();
+        const url = prompt("Nhập URL:");
         if (url) {
             editor.chain().focus().extendMarkRange("link").setLink({href: url}).run();
         }
     }, [editor]);
 
+    // Hàm xử lý các công cụ như bold, italic, heading, v.v.
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleBold = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Bold
+        event.preventDefault();
         editor.chain().focus().toggleBold().run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleItalic = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Italic
+        event.preventDefault();
         editor.chain().focus().toggleItalic().run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleStrike = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Strikethrough
+        event.preventDefault();
         editor.chain().focus().toggleStrike().run();
     }, [editor]);
 
+    // Các công cụ khác (Heading, List, Align, Undo, Redo, v.v.)
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleHeading1 = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Heading1
+        event.preventDefault();
         editor.chain().focus().toggleHeading({level: 1}).run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleHeading2 = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Heading2
+        event.preventDefault();
         editor.chain().focus().toggleHeading({level: 2}).run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleHeading3 = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Heading3
+        event.preventDefault();
         editor.chain().focus().toggleHeading({level: 3}).run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleBulletList = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Bullet List
+        event.preventDefault();
         editor.chain().focus().toggleBulletList().run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const toggleOrderedList = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Ordered List
+        event.preventDefault();
         editor.chain().focus().toggleOrderedList().run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const setTextAlignLeft = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Align Left
+        event.preventDefault();
         editor.chain().focus().setTextAlign("left").run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const setTextAlignCenter = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Align Center
+        event.preventDefault();
         editor.chain().focus().setTextAlign("center").run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const setTextAlignRight = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Align Right
+        event.preventDefault();
         editor.chain().focus().setTextAlign("right").run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const undo = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Undo
+        event.preventDefault();
         editor.chain().focus().undo().run();
     }, [editor]);
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const redo = useCallback((event: React.MouseEvent) => {
-        event.preventDefault(); // Ngừng submit form khi ấn nút Redo
+        event.preventDefault();
         editor.chain().focus().redo().run();
     }, [editor]);
 
@@ -135,7 +137,6 @@ export default function Menubar({editor}: Props) {
             </button>
             <input type="file" accept="image/*" onChange={addImage} className="hidden" id="imageUpload"/>
             <label htmlFor="imageUpload" className="cursor-pointer">
-                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image size={20}/>
             </label>
             <button onClick={addLink}>
