@@ -103,7 +103,7 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
             console.error("Error in updatePostApi:", error);
             return handleError(error);
         }
-    }, []);
+    }, [postList]);
 
     useEffect(() => {
         const fetchPostList = async () => {

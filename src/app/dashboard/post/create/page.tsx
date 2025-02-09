@@ -2,7 +2,6 @@
 import {useState} from "react";
 import {Input} from "@/components/ui/input";
 import {validateCreatePost, CreatePost, PostStatus, PostStatusOptions} from "@/types/dashboard/post";
-import {z} from "zod";
 import Editor from "@/components/Tiptap/Editor";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {useCategoryContext} from "@/context/CategoryContext";
@@ -30,58 +29,52 @@ export default function Page() {
         content: "",
         status: PostStatus.DRAFT,
         category_id: "",
-        tag_ids: [],
+        tags_id: [],
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        const newErrors: Record<string, string> = {};
-
-        try {
-            validateCreatePost(formData);
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                error.errors.forEach((err) => {
-                    if (err.path) {
-                        newErrors[err.path.join(".")] = err.message;
-                    }
-                });
-            }
-        }
+        const validationErrors = validateCreatePost(formData) || {};
 
         const isPostTitleUnique = await checkUniquePost("title", formData.title);
         if (!isPostTitleUnique) {
-            newErrors.title = "Already exists with this title";
+            validationErrors.title = "Title already exists";
         }
 
         if (!formData.category_id) {
-            newErrors.category = "Category is required";
+            validationErrors.category = "Category is required";
         }
 
-        if (formData.tag_ids.length === 0) {
-            newErrors.tags = "At least one tag is required";
+        if (formData.tags_id.length === 0) {
+            validationErrors.tags = "At least one tag is required";
         }
 
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
 
-        const newContent = await uploadImageAndReplaceUrls(formData.content, uploadImage);
-        const updatedFormData = {...formData, content: newContent};
-        setFormData(updatedFormData);
+        try {
+            const newContent = await uploadImageAndReplaceUrls(formData.content, uploadImage);
+            const createPostData = {...formData, content: newContent};
+            setFormData(createPostData);
 
-        const response = await createPost(updatedFormData);
-        if (response) {
+            const response = await createPost(createPostData);
+            if (response) {
+                toast({title: "Success", description: "Post updated successfully"});
+                router.push(navigateToSidebarItem("Post List"));
+            }
+        } catch (error: any) {
             toast({
-                title: "Success",
-                description: "Post created successfully",
+                title: "Error",
+                description: "An error occurred while updating the post: " + error.message,
+                variant: "destructive",
             });
-            router.push(navigateToSidebarItem("Post List"));
         }
     };
+
 
     const handleContentChange = (newContent: string) => {
         setFormData({
@@ -158,10 +151,10 @@ export default function Page() {
                                 onValueChange={(selectedTags) =>
                                     setFormData({
                                         ...formData,
-                                        tag_ids: selectedTags.map((tag) => tag)
+                                        tags_id: selectedTags.map((tag) => tag)
                                     })
                                 }
-                                defaultValue={formData.tag_ids}
+                                defaultValue={formData.tags_id}
                                 placeholder="Select tags"
                                 variant="inverted"
                                 animation={2}

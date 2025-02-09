@@ -22,6 +22,7 @@ export default function Page() {
     const {tagList} = useTagContext();
     const {getPostBySlug, updatePost, checkUniquePost} = usePostContext();
     const {uploadImage} = useImageContext();
+    const [defaultTags, setDefaultTags] = useState<string[]>([]);
 
     const {toast} = useToast();
     const router = useRouter();
@@ -33,52 +34,43 @@ export default function Page() {
         content: "",
         status: PostStatus.DRAFT,
         category_id: "",
-        tag_ids: [],
+        tags_id: [],
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
-    const [currentTitle, setCurrentTitle] = useState("");
+    const [currentTitle, setCurrentTitle] = useState<string>("");
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        const newErrors = validateCreatePost(formData) || {};
-
-        const validationResult = validateCreatePost(formData);
-
-        for (const key in validationResult) {
-            if (validationResult.hasOwnProperty(key)) {
-                newErrors[key] = validationResult[key];
-            }
-        }
+        const validationErrors = validateCreatePost(formData) || {};
 
         if (formData.title !== currentTitle) {
             const isPostTitleUnique = await checkUniquePost("title", formData.title);
             if (!isPostTitleUnique) {
-                newErrors.title = "Already exists with this title";
+                validationErrors.title = "Title already exists";
             }
         }
 
         if (!formData.category_id) {
-            newErrors.category_id = "Category is required";
+            validationErrors.category = "Category is required";
         }
 
-        if (formData.tag_ids.length === 0) {
-            newErrors.tag_ids = "At least one tag is required";
+        if (formData.tags_id.length === 0) {
+            validationErrors.tags = "At least one tag is required";
         }
 
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
 
         try {
             const newContent = await uploadImageAndReplaceUrls(formData.content, uploadImage);
-            const updatedFormData = {...formData, content: newContent};
+            const updatedPostData = {...formData, content: newContent};
+            setFormData(updatedPostData);
 
-            setFormData(updatedFormData);
-
-            const response = await updatePost(updatedFormData.id, updatedFormData);
+            const response = await updatePost(updatedPostData.id, updatedPostData);
             if (response) {
                 toast({title: "Success", description: "Post updated successfully"});
                 router.push(navigateToSidebarItem("Post List"));
@@ -91,7 +83,6 @@ export default function Page() {
             });
         }
     };
-
 
     const handleContentChange = (newContent: string) => {
         setFormData({
@@ -122,11 +113,15 @@ export default function Page() {
 
                 const postData = {
                     ...data,
-                    tag_ids: data.tags.map((tag) => tag.id),
+                    tags_id: data.tags.map((tag) => tag.id),
                     category_id: data.category.id,
                 };
                 setFormData(postData);
                 setCurrentTitle(data.title);
+
+                const defaultTags = data.tags.map((tag) => (tag.id));
+                console.log("defaultTags", defaultTags);
+                setDefaultTags(defaultTags);
 
                 setLoading(false);
             } catch (error) {
@@ -207,19 +202,23 @@ export default function Page() {
 
                         <div className={"flex flex-col"}>
                             <label>Tags</label>
-                            <MultiSelect
-                                options={tagList.map((tag) => ({value: tag.id, label: tag.name}))}
-                                onValueChange={(selectedTags) =>
-                                    setFormData({
-                                        ...formData,
-                                        tag_ids: selectedTags.map((tag) => tag),
-                                    })
-                                }
-                                defaultValue={formData.tag_ids}
-                                placeholder="Select tags"
-                                variant="inverted"
-                                animation={2}
-                            />
+                            {
+                                defaultTags.length > 0 &&
+                                <MultiSelect
+                                    options={tagList.map((tag) => ({value: tag.id, label: tag.name}))}
+                                    onValueChange={(selectedTags) =>
+                                        setFormData({
+                                            ...formData,
+                                            tags_id: selectedTags.map((tag) => tag),
+                                        })
+                                    }
+                                    defaultValue={defaultTags}
+                                    placeholder="Select tags"
+                                    variant="inverted"
+                                    animation={2}
+                                />
+                            }
+
                             {errors.tags && <p className="text-red-500">{errors.tags}</p>}
                         </div>
                     </div>

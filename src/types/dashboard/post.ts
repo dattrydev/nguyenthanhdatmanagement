@@ -37,12 +37,9 @@ export interface PostListResponse extends PagingResponse {
     posts: PostList[];
 }
 
-export interface CreatePost {
-    title: string;
-    content: string;
-    status: PostStatus;
+export type CreatePost = Pick<Post, "title" | "content" | "status"> & {
     category_id: string;
-    tag_ids: string[];
+    tags_id: string[];
 }
 
 export interface UpdatePost extends CreatePost {
@@ -56,7 +53,7 @@ export const createPostSchema = z.object({
         .max(10000, "Post content cannot exceed 10000 characters"),
     status: z.nativeEnum(PostStatus),
     category_id: z.string().uuid("Category ID must be a valid UUID"),
-    tag_ids: z.array(z.string().uuid("Tag ID must be a valid UUID")).min(1, "At least one tag is required"),
+    tags_id: z.array(z.string().uuid("Tag ID must be a valid UUID")).min(1, "At least one tag is required"),
 });
 
 export const validateCreatePost = (data: unknown) => {
