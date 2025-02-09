@@ -1,5 +1,5 @@
 import {CreatePost, Post, PostListPagingRequest, PostListResponse, UpdatePost} from "@/types/dashboard/post";
-import {apiGet, apiPatch, apiPost} from "@/utils/api-request";
+import {apiDelete, apiGet, apiPatch, apiPost} from "@/utils/api-request";
 
 export const getPostListApi = async (postRequest: PostListPagingRequest): Promise<PostListResponse> => {
     return await apiGet("posts", postRequest);
@@ -21,3 +21,6 @@ export const updatePostApi = async (id: string, updatePost: UpdatePost): Promise
     return await apiPatch(`posts/${id}`, updatePost);
 }
 
+export const deletePostApi = async (id: string): Promise<void> => {
+    return await apiDelete(`posts/${id}/delete`);
+}

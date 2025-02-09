@@ -2,7 +2,14 @@
 
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
 import {CreatePost, Post, PostList, PostListPagingRequest, UpdatePost} from "@/types/dashboard/post";
-import {checkUniquePostApi, createPostApi, getPostBySlugApi, getPostListApi, updatePostApi} from "@/api/post";
+import {
+    checkUniquePostApi,
+    createPostApi,
+    deletePostApi,
+    getPostBySlugApi,
+    getPostListApi,
+    updatePostApi
+} from "@/api/post";
 import {PagingResponse} from "@/types/api";
 import {ErrorResponse} from "@/types/error/error-response";
 import {handleError} from "@/utils/handle-error";
@@ -18,6 +25,7 @@ interface PostContextType {
     checkUniquePost: (field: string, value: string) => Promise<boolean | ErrorResponse>;
     createPost: (createPost: CreatePost) => Promise<Post | ErrorResponse>;
     updatePost: (id: string, updatePost: UpdatePost) => Promise<Post | ErrorResponse>;
+    deletePost: (id: string) => Promise<void | ErrorResponse>;
 }
 
 export const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -82,7 +90,6 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
 
     const updatePost = useCallback(async (id: string, updatePost: UpdatePost): Promise<Post | ErrorResponse> => {
         try {
-            console.log("updatePost", updatePost);
             const response = await updatePostApi(id, updatePost);
             if (response) {
                 const updatedPostList = postList.map(post => {
@@ -104,6 +111,16 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
             return handleError(error);
         }
     }, [postList]);
+
+    const deletePost = useCallback(async (id: string): Promise<void | ErrorResponse> => {
+        try {
+            await deletePostApi(id);
+            setPostList((prev) => prev.filter(post => post.id !== id));
+        } catch (error) {
+            console.error("Error in deletePostApi:", error);
+            return handleError(error);
+        }
+    }, []);
 
     useEffect(() => {
         const fetchPostList = async () => {
@@ -133,7 +150,8 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
                 getPostBySlug,
                 checkUniquePost,
                 createPost,
-                updatePost
+                updatePost,
+                deletePost
             }}>
             {children}
         </PostContext.Provider>

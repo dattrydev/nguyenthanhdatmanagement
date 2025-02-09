@@ -69,7 +69,7 @@ export default function CustomImage({node, deleteNode}: CustomImageProps) {
                 <DialogTrigger asChild>
                     <button
                         className="absolute top-0 left-0 bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                        onClick={() => setIsOpen(true)} // Mở dialog khi nhấn nút Edit
+                        onClick={() => setIsOpen(true)}
                     >
                         <Edit size={14}/>
                     </button>
