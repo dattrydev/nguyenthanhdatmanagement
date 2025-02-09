@@ -11,12 +11,12 @@ export const sidebarItemList: SidebarItem[] = [
         items: [
             {
                 title: "Post List",
-                url: "/dashboard/post/list",
+                url: "/dashboard/post/",
             },
             {
                 title: "Create Post",
                 url: "/dashboard/post/create",
-            }
+            },
         ]
     },
     {

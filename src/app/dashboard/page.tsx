@@ -7,7 +7,7 @@ export default function Page() {
     const router = useRouter();
 
     useEffect(() => {
-        router.push("/dashboard/post/list");
+        router.push("/dashboard/post/");
     }, []);
     return null;
 }

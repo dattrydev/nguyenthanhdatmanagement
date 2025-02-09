@@ -65,7 +65,7 @@ export const columnsConfig: ColumnDef<PostList>[] = [
         },
     },
     {
-        accessorKey: "tags_name",
+        accessorKey: "tags",
         header: "Tags",
         cell: ({row}) => row.original.tags_name,
         enableColumnFilter: true,

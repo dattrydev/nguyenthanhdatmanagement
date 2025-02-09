@@ -8,21 +8,26 @@ import {
 } from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {Input} from "@/components/ui/input";
-import * as React from "react";
 import {MultiSelect} from "@/components/custom/MultiSelect";
+import * as React from "react";
 import {useState} from "react";
+import {TableFilterConfig} from "@/components/custom/TableFilterConfig";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[]; // Các cột của bảng
-    data: TData[]; // Dữ liệu bảng
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+    tableFilterConfig?: TableFilterConfig[];
+    onClickRow?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
                                              columns,
                                              data,
+                                             tableFilterConfig = [],
+                                             onClickRow,
                                          }: DataTableProps<TData, TValue>) {
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const table = useReactTable({
         data,
         columns,
@@ -33,26 +38,6 @@ export function DataTable<TData, TValue>({
         getFilteredRowModel: getFilteredRowModel(),
         onColumnFiltersChange: setColumnFilters,
     });
-
-    const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-    const statusList = [
-        {value: "draft", label: "DRAFT"},
-        {value: "inactive", label: "Inactive"},
-    ];
-
-    const categoryList = [
-        {value: "tech", label: "Tech"},
-        {value: "design", label: "Design"},
-    ];
-
-    const tagsList = [
-        {value: "react", label: "React"},
-        {value: "angular", label: "Angular"},
-        {value: "vue", label: "Vue"},
-    ];
 
     return (
         <div className="rounded-md border">
@@ -73,42 +58,46 @@ export function DataTable<TData, TValue>({
                     <TableRow>
                         {table.getHeaderGroups().map((headerGroup) =>
                             headerGroup.headers.map((header) => {
+                                const filterConfig = tableFilterConfig.find((config) => config.key === header.column.id);
+                                if (!filterConfig) return <TableCell key={header.id}/>;
+
                                 return (
                                     <TableCell key={header.id}>
-                                        {header.column.id === "title" ? (
+                                        {filterConfig.type === "text" && (
                                             <Input
                                                 value={(header.column.getFilterValue() as string) ?? ""}
                                                 onChange={(e) => header.column.setFilterValue(e.target.value)}
-                                                placeholder={`Search ${header.column.id}`}
+                                                placeholder={filterConfig.placeholder || `Search ${header.column.id}`}
                                             />
-                                        ) : header.column.id === "status" ? (
+                                        )}
+
+                                        {filterConfig.type === "select" && filterConfig.options && (
+                                            <Select
+                                                value={header.column.getFilterValue() as string}
+                                                onValueChange={(value) => header.column.setFilterValue(value)}
+                                            >
+                                                <SelectTrigger className="h-8 w-[150px]">
+                                                    <SelectValue
+                                                        placeholder={filterConfig.placeholder || `Select ${header.column.id}`}/>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {filterConfig.options.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+
+                                        {filterConfig.type === "multi-select" && filterConfig.options && (
                                             <MultiSelect
-                                                options={statusList}
-                                                onValueChange={setSelectedStatus}
-                                                defaultValue={selectedStatus}
-                                                placeholder="Select status"
-                                                variant="inverted"
-                                                animation={2}
+                                                options={filterConfig.options}
+                                                onValueChange={(values) => header.column.setFilterValue(values)}
+                                                defaultValue={filterConfig.defaultValue ? [filterConfig.defaultValue] : []}
+                                                placeholder={filterConfig.placeholder || `Select ${header.column.id}`}
                                             />
-                                        ) : header.column.id === "category" ? (
-                                            <MultiSelect
-                                                options={categoryList}
-                                                onValueChange={setSelectedCategory}
-                                                defaultValue={selectedCategory}
-                                                placeholder="Select category"
-                                                variant="inverted"
-                                                animation={2}
-                                            />
-                                        ) : header.column.id === "tags_name" ? (
-                                            <MultiSelect
-                                                options={tagsList}
-                                                onValueChange={setSelectedTags}
-                                                defaultValue={selectedTags}
-                                                placeholder="Select tags"
-                                                variant="inverted"
-                                                animation={2}
-                                            />
-                                        ) : null}
+                                        )}
                                     </TableCell>
                                 );
                             })
@@ -117,7 +106,12 @@ export function DataTable<TData, TValue>({
 
                     {table.getRowModel().rows.length ? (
                         table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                            <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && "selected"}
+                                className={"cursor-pointer"}
+                                onClick={() => onClickRow && onClickRow(row.original)}
+                            >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
