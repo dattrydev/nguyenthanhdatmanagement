@@ -5,7 +5,7 @@ import {CreatePost, Post, PostList, PostListPagingRequest, UpdatePost} from "@/t
 import {
     checkUniquePostApi,
     createPostApi,
-    deletePostApi,
+    deletePostApi, deletePostsApi,
     getPostBySlugApi,
     getPostListApi,
     updatePostApi
@@ -24,9 +24,11 @@ interface PostContextType {
     getPostList: () => Promise<PostList[] | ErrorResponse>;
     getPostBySlug: (slug: string) => Promise<Post | ErrorResponse>;
     checkUniquePost: (field: string, value: string) => Promise<boolean | ErrorResponse>;
+
     createPost: (createPost: CreatePost) => Promise<Post | ErrorResponse>;
     updatePost: (id: string, updatePost: UpdatePost) => Promise<Post | ErrorResponse>;
     deletePost: (id: string) => Promise<void | ErrorResponse>;
+    deletePosts: (ids: string[]) => Promise<void | ErrorResponse>;
 }
 
 export const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -40,7 +42,6 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
         totalPages: 0,
         currentPage: 0,
     });
-
 
     const updatePostListPagingRequest = useCallback((updates: Partial<PostListPagingRequest> & {
         [key: string]: any
@@ -144,6 +145,16 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
         }
     }, []);
 
+    const deletePosts = useCallback(async (ids: string[]): Promise<void | ErrorResponse> => {
+        try {
+            await Promise.all(ids.map(id => deletePostsApi([id])));
+            setPostList((prev) => prev.filter(post => !ids.includes(post.id)));
+        } catch (error) {
+            console.error("Error in deletePosts:", error);
+            return handleError(error);
+        }
+    }, []);
+
     useEffect(() => {
         const fetchPostList = async () => {
             const postListPagingResponse = await getPostListApi(postListPagingRequest);
@@ -167,12 +178,15 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
                 postListPagingRequest,
                 updatePostListPagingRequest,
                 paging,
+
                 getPostList,
                 getPostBySlug,
                 checkUniquePost,
+                
                 createPost,
                 updatePost,
-                deletePost
+                deletePost,
+                deletePosts,
             }}>
             {children}
         </PostContext.Provider>

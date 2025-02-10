@@ -24,3 +24,7 @@ export const updatePostApi = async (id: string, updatePost: UpdatePost): Promise
 export const deletePostApi = async (id: string): Promise<void> => {
     return await apiDelete(`posts/${id}`);
 }
+
+export const deletePostsApi = async (ids: string[]): Promise<void> => {
+    return await apiDelete("posts", ids);
+}

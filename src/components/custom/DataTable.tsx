@@ -2,6 +2,7 @@ import {
     ColumnDef,
     flexRender,
     getCoreRowModel,
+    getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
@@ -10,6 +11,9 @@ import {MultiSelect} from "@/components/custom/MultiSelect";
 import {TableFilterConfig} from "@/components/custom/TableFilterConfig";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {FaArrowUp, FaArrowDown} from "react-icons/fa";
+import {useEffect} from "react";
+
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -17,19 +21,27 @@ interface DataTableProps<TData, TValue> {
     tableFilterConfig?: TableFilterConfig[];
     onClickRow?: (row: TData) => void;
     onChangeFilter?: (filters: Record<string, any>) => void;
+    sortColumn?: string;
+    setSortColumn?: (value: string) => void;
+    rowSelection?: string[];
+    setRowSelection?: (value: string[]) => void;
 }
-
 
 export function DataTable<TData, TValue>({
                                              columns,
                                              data,
                                              tableFilterConfig = [],
                                              onChangeFilter,
+                                             setRowSelection,
+                                             sortColumn,
+                                             setSortColumn,
                                          }: DataTableProps<TData, TValue>) {
+
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
     });
 
     const handleFilterChange = (key: string, value: any) => {
@@ -38,16 +50,48 @@ export function DataTable<TData, TValue>({
         }
     };
 
+    useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        setRowSelection(Object.values(table.getSelectedRowModel().rowsById).map(item => item.original.id))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [table.getSelectedRowModel().rowsById]);
+
     return (
-        <div className="rounded-md border ">
+        <div className="rounded-md border">
             <ScrollArea className={"h-[625px]"}>
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
-                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                    <TableHead key={header.id}
+                                               className={`${header.column.columnDef.enableSorting ? "cursor-pointer" : ""}`}
+                                               onClick={() => {
+                                                   if (!header.column.columnDef.enableSorting) return;
+                                                   if (sortColumn === undefined) return;
+                                                   if (setSortColumn === undefined) return;
+                                                   if (sortColumn === header.column.id) {
+                                                       setSortColumn(`-${header.column.id}`);
+                                                   } else {
+                                                       setSortColumn(header.column.id);
+                                                   }
+                                               }}>
+                                        {header.isPlaceholder ? null : (
+                                            <div className={"flex gap-2 items-center"}>
+                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                                {header.column.columnDef.enableSorting && (
+                                                    <span>
+                                                {sortColumn === header.column.id &&
+                                                    <FaArrowUp/>
+                                                }
+                                                        {sortColumn === `-${header.column.id}` &&
+                                                            <FaArrowDown/>
+                                                        }
+                                            </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </TableHead>
                                 ))}
                             </TableRow>
@@ -74,19 +118,17 @@ export function DataTable<TData, TValue>({
                                                 />
                                             )}
 
-                                            {
-                                                filterConfig.type === "number" && (
-                                                    <Input
-                                                        value={(header.column.getFilterValue() as string) ?? ""}
-                                                        onChange={(e) => {
-                                                            header.column.setFilterValue(e.target.value);
-                                                            handleFilterChange(filterConfig.key, e.target.value);
-                                                        }}
-                                                        type="number"
-                                                        placeholder={filterConfig.placeholder || `Search ${header.column.id}`}
-                                                    />
-                                                )
-                                            }
+                                            {filterConfig.type === "number" && (
+                                                <Input
+                                                    value={(header.column.getFilterValue() as string) ?? ""}
+                                                    onChange={(e) => {
+                                                        header.column.setFilterValue(e.target.value);
+                                                        handleFilterChange(filterConfig.key, e.target.value);
+                                                    }}
+                                                    type="number"
+                                                    placeholder={filterConfig.placeholder || `Search ${header.column.id}`}
+                                                />
+                                            )}
 
                                             {filterConfig.type === "select" && filterConfig.options && (
                                                 <Select
@@ -122,7 +164,6 @@ export function DataTable<TData, TValue>({
                                                     placeholder={filterConfig.placeholder || `Select ${header.column.id}`}
                                                 />
                                             )}
-
                                         </TableCell>
                                     );
                                 })
@@ -131,12 +172,9 @@ export function DataTable<TData, TValue>({
 
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
+                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell key={cell.id} className={"px-2"}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}

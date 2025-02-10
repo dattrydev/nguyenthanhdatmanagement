@@ -53,12 +53,14 @@ export const PostActions = ({post}: PostActionsProps) => {
                         <DialogClose asChild={true}>
                             <Button variant="secondary">Cancel</Button>
                         </DialogClose>
-                        <Button
-                            variant="destructive"
-                            type="submit"
-                            onClick={() => handleDelete(post.id)}>
-                            Confirm
-                        </Button>
+                        <DialogClose asChild={true}>
+                            <Button
+                                variant="destructive"
+                                type="submit"
+                                onClick={() => handleDelete(post.id)}>
+                                Confirm
+                            </Button>
+                        </DialogClose>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

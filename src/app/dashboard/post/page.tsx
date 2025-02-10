@@ -3,28 +3,28 @@
 import {postColumns} from "@/app/dashboard/post/postColumns";
 import * as React from "react";
 import {
-    ColumnFiltersState,
-    getCoreRowModel, getFilteredRowModel,
-    getPaginationRowModel, getSortedRowModel,
-    SortingState,
+    getCoreRowModel,
     useReactTable,
-    VisibilityState
 } from "@tanstack/react-table";
 import {DataTable} from "@/components/custom/DataTable";
 import {TableHeader} from "@/app/dashboard/post/TableHeader";
 import {usePostContext} from "@/context/PostContext";
-import {useMemo, useEffect, useCallback} from "react";
+import {useMemo, useEffect, useCallback, useState} from "react";
 import {getTableFilterConfig} from "@/components/custom/TableFilterConfig";
 import {PostStatusOptions} from "@/types/dashboard/post";
 import {useCategoryContext} from "@/context/CategoryContext";
 import {useTagContext} from "@/context/TagContext";
 import {DataTablePagination} from "@/components/custom/DataTablePagination";
 import {useRouter} from "next/navigation";
+import {toast} from "@/hooks/use-toast";
 
 export default function Page() {
-    const {postList, paging, updatePostListPagingRequest} = usePostContext();
+    const {postList, paging, updatePostListPagingRequest, deletePosts} = usePostContext();
     const {categoryList} = useCategoryContext();
     const {tagList} = useTagContext();
+
+    const [rowSelection, setRowSelection] = useState<string[]>([]);
+    const [sortColumn, setSortColumn] = useState<string>("");
 
     const router = useRouter();
 
@@ -44,28 +44,10 @@ export default function Page() {
         router.push("/dashboard/post/create");
     }, [router]);
 
-    const [sorting, setSorting] = React.useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-    const [rowSelection, setRowSelection] = React.useState({})
-
     const table = useReactTable({
         data: postListData,
         columns: postColumns,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        onColumnVisibilityChange: setColumnVisibility,
-        onRowSelectionChange: setRowSelection,
-        state: {
-            sorting,
-            columnFilters,
-            columnVisibility,
-            rowSelection,
-        },
     });
 
     const tableFilterConfig = useMemo(() => {
@@ -112,6 +94,13 @@ export default function Page() {
         updatePostListPagingRequest(formattedFilters);
     }, [updatePostListPagingRequest]);
 
+    const handleDeletePosts = useCallback(() => {
+        deletePosts(rowSelection).then(() =>
+            toast({
+                title: "Posts deleted successfully",
+                description: "Selected posts have been deleted",
+            }));
+    }, [deletePosts, rowSelection]);
 
     useEffect(() => {
         if (postListData) {
@@ -122,15 +111,28 @@ export default function Page() {
         }
     }, [postListData, table]);
 
+    useEffect(() => {
+        const sortDirection = sortColumn.includes("-") ? "desc" : "asc";
+        const sortBy = sortColumn.replace("-", "");
+        if (sortColumn) {
+            updatePostListPagingRequest({sortBy, sortDirection});
+        }
+    }, [sortColumn, updatePostListPagingRequest]);
+
 
     return (
         <div className={"flex flex-col gap-3"}>
-            <TableHeader handleCreatePost={handleCreatePost}/>
+            <TableHeader rowSelection={rowSelection} handleCreatePost={handleCreatePost}
+                         handleDeletePosts={handleDeletePosts}/>
             <DataTable
                 columns={postColumns}
                 data={postListData}
                 tableFilterConfig={tableFilterConfig}
                 onChangeFilter={handleFilterChange}
+                sortColumn={sortColumn}
+                setSortColumn={setSortColumn}
+                rowSelection={rowSelection}
+                setRowSelection={setRowSelection}
             />
             <DataTablePagination totalPages={paging.totalPages} currentPage={paging.currentPage}
                                  onPageChange={handlePageChange} onPageSizeChange={handlePageSizeChange}/>
