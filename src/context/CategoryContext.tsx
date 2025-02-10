@@ -2,7 +2,7 @@
 
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
 import {ErrorResponse} from "@/types/error/error-response";
-import {PagingResponse} from "@/types/api";
+import {PagingResponse} from "@/types/paging";
 import {Category} from "@/types/dashboard/category";
 import {createCategoryApi, getCategoryListApi} from "@/api/category";
 

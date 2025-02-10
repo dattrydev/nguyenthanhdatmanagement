@@ -1,6 +1,6 @@
 import {Tag} from "@/types/dashboard/tag";
 import {Category} from "@/types/dashboard/category";
-import {PagingRequest, PagingResponse} from "@/types/api";
+import {PagingRequest, PagingResponse} from "@/types/paging";
 import {z} from "zod";
 
 export enum PostStatus {

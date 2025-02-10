@@ -10,14 +10,15 @@ import {
     getPostListApi,
     updatePostApi
 } from "@/api/post";
-import {PagingResponse} from "@/types/api";
+import {PagingResponse} from "@/types/paging";
 import {ErrorResponse} from "@/types/error/error-response";
 import {handleError} from "@/utils/handle-error";
+import {useDebounce} from "use-debounce";
 
 interface PostContextType {
     postList: PostList[];
     postListPagingRequest: PostListPagingRequest;
-    setPostListPagingRequest: (postListPagingRequest: PostListPagingRequest) => void;
+    updatePostListPagingRequest: (updates: Partial<PostListPagingRequest>) => void;
     paging: PagingResponse;
 
     getPostList: () => Promise<PostList[] | ErrorResponse>;
@@ -33,22 +34,30 @@ export const PostContext = createContext<PostContextType | undefined>(undefined)
 export const PostProvider = ({children}: { children: ReactNode }) => {
     const [postList, setPostList] = useState<PostList[]>([]);
     const [postListPagingRequest, setPostListPagingRequest] = useState<PostListPagingRequest>({});
+    const [debouncedPostListPagingRequest] = useDebounce(postListPagingRequest, 500);
+
     const [paging, setPaging] = useState<PagingResponse>({
         totalPages: 0,
-        totalRecords: 0,
         currentPage: 0,
     });
 
+    const updatePostListPagingRequest = (updates: Partial<PostListPagingRequest>) => {
+        setPostListPagingRequest(prev => ({
+            ...prev,
+            ...updates
+        }));
+    };
+
     const getPostList = useCallback(async (): Promise<PostList[] | ErrorResponse> => {
         try {
-            const response = await getPostListApi(postListPagingRequest);
+            const response = await getPostListApi(debouncedPostListPagingRequest);
             setPostList(response.posts);
             return response.posts;
         } catch (error) {
             console.error("Error in getPostListApi:", error);
             return handleError(error);
         }
-    }, [postListPagingRequest]);
+    }, [debouncedPostListPagingRequest]);
 
     const getPostBySlug = useCallback(async (slug: string): Promise<Post | ErrorResponse> => {
         try {
@@ -131,7 +140,6 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
             setPostList(postListPagingResponse.posts);
             setPaging({
                 totalPages: postListPagingResponse.totalPages,
-                totalRecords: postListPagingResponse.totalRecords,
                 currentPage: postListPagingResponse.currentPage,
             });
         };
@@ -144,7 +152,7 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
             value={{
                 postList,
                 postListPagingRequest,
-                setPostListPagingRequest,
+                updatePostListPagingRequest,
                 paging,
                 getPostList,
                 getPostBySlug,

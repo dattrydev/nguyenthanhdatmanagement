@@ -1,4 +1,4 @@
-import {PagingResponse} from "@/types/api";
+import {PagingResponse} from "@/types/paging";
 
 export interface Category {
     id: string;

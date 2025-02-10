@@ -1,17 +1,16 @@
-import {useState} from "react";
 import {Button} from "@/components/ui/button";
-import {MoreHorizontal} from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import DeleteDialog from "@/components/custom/DeleteDialog";
 import {usePostContext} from "@/context/PostContext";
 import {PostList} from "@/types/dashboard/post";
+import {useRouter} from "next/navigation";
+import {
+    Dialog, DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle, DialogTrigger
+} from "@/components/ui/dialog";
+import {toast} from "@/hooks/use-toast";
 
 type PostActionsProps = {
     post: PostList;
@@ -19,52 +18,50 @@ type PostActionsProps = {
 
 export const PostActions = ({post}: PostActionsProps) => {
     const {deletePost} = usePostContext();
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-    const handleDelete = () => {
-        deletePost(post.id);
-        setOpenDeleteDialog(false);
+    const router = useRouter();
+
+    const handleDelete = (postId: string) => {
+        deletePost(postId).then(() =>
+            toast({
+                title: "Post deleted successfully.",
+                description: "The post has been deleted successfully.",
+            }));
     };
 
-    return (
-        <div>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal/>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem
-                        className={"cursor-pointer"}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(post.slug);
-                        }}
-                    >
-                        Copy slug
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator/>
-                    <DropdownMenuItem
-                        className={"cursor-pointer text-red-500"}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDeleteDialog(true);
-                        }}
-                    >
-                        Delete Post
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+    const handleEdit = (row: PostList) => {
+        router.push(`/dashboard/post/${row.slug}`);
+    }
 
-            <DeleteDialog
-                open={openDeleteDialog}
-                onClose={() => setOpenDeleteDialog(false)}
-                onConfirm={handleDelete}
-                title={`Are you sure you want to delete the post: "${post.title}"?`}
-            />
+    return (
+        <div className={"flex justify-center gap-2"}>
+            <Button variant={"secondary"} onClick={() => handleEdit(post)}>
+                Edit
+            </Button>
+            <Dialog>
+                <DialogTrigger asChild={true}>
+                    <Button variant={"destructive"}>
+                        Delete
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Post</DialogTitle>
+                        <DialogDescription>{`Are you sure you want to delete "${post.title}"?`}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex justify-end">
+                        <DialogClose asChild={true}>
+                            <Button variant="secondary">Cancel</Button>
+                        </DialogClose>
+                        <Button
+                            variant="destructive"
+                            type="submit"
+                            onClick={() => handleDelete(post.id)}>
+                            Confirm
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

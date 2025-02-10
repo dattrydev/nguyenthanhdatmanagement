@@ -10,27 +10,32 @@ import {
     useReactTable,
     VisibilityState
 } from "@tanstack/react-table";
-import {TableFooter} from "@/app/dashboard/post/TableFooter";
 import {DataTable} from "@/components/custom/DataTable";
 import {TableHeader} from "@/app/dashboard/post/TableHeader";
 import {usePostContext} from "@/context/PostContext";
 import {useMemo, useEffect} from "react";
 import {getTableFilterConfig} from "@/components/custom/TableFilterConfig";
-import {PostList, PostStatusOptions} from "@/types/dashboard/post";
+import {PostStatusOptions} from "@/types/dashboard/post";
 import {useCategoryContext} from "@/context/CategoryContext";
 import {useTagContext} from "@/context/TagContext";
-import {useRouter} from "next/navigation";
+import {DataTablePagination} from "@/components/custom/DataTablePagination";
 
 export default function Page() {
-    const {postList} = usePostContext();
+    const {postList, paging, updatePostListPagingRequest} = usePostContext();
     const {categoryList} = useCategoryContext();
     const {tagList} = useTagContext();
-
-    const router = useRouter();
 
     const postListData = useMemo(() => {
         return postList;
     }, [postList]);
+
+    const handlePageChange = (page: number) => {
+        updatePostListPagingRequest({page});
+    };
+
+    const handlePageSizeChange = (size: number) => {
+        updatePostListPagingRequest({size});
+    };
 
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -75,10 +80,6 @@ export default function Page() {
         }
     ]);
 
-    const onClickRow = (row: PostList) => {
-        router.push(`/dashboard/post/${row.slug}`);
-    }
-
     useEffect(() => {
         if (postListData) {
             table.setState((prevState) => ({
@@ -88,10 +89,6 @@ export default function Page() {
         }
     }, [postListData, table]);
 
-    useEffect(() => {
-        console.log(postList);
-    }, [postList]);
-
 
     return (
         <div className={"flex flex-col gap-3"}>
@@ -100,9 +97,9 @@ export default function Page() {
                 columns={postColumns}
                 data={postListData}
                 tableFilterConfig={tableFilterConfig}
-                onClickRow={onClickRow}
             />
-            <TableFooter table={table}/>
+            <DataTablePagination totalPages={paging.totalPages} currentPage={paging.currentPage}
+                                 onPageChange={handlePageChange} onPageSizeChange={handlePageSizeChange}/>
         </div>
     );
 }
