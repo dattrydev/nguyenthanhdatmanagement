@@ -20,13 +20,13 @@ export interface Post {
     title: string;
     content: string;
     status: PostStatus;
-    readingTime: number;
+    reading_time: number;
     slug: string;
     category: Category;
     tags: Tag[];
 }
 
-export type PostList = Pick<Post, "id" | "title" | "status" | "slug"> & {
+export type PostList = Pick<Post, "id" | "title" | "status" | "reading_time" | "slug"> & {
     category_name: string;
     tags_name: string;
 }

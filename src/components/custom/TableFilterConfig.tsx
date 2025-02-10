@@ -21,6 +21,7 @@ export type TableFilterConfig = {
 export const getTableFilterConfig = (
     filters: {
         key: string;
+        label?: string;
         type?: TableFilterConfig["type"];
         options?: { label: string; value: string }[];
         defaultValue?: string;
@@ -33,15 +34,15 @@ export const getTableFilterConfig = (
         onNumberChange?: (value: string) => void;
     }[]
 ): TableFilterConfig[] => {
-    return filters.map(({key, type = "text", options, defaultValue, ...callbacks}) => ({
-        label: key.charAt(0).toUpperCase() + key.slice(1), // Viết hoa chữ cái đầu
+    return filters.map(({key, label, type = "text", options, defaultValue, ...callbacks}) => ({
+        label: key.charAt(0).toUpperCase() + key.slice(1),
         key,
         type,
         options: options || undefined,
         defaultValue,
-        placeholder: `Search ${key}...`,
+        placeholder: `Search ${label ?? key}`,
         className: "w-full",
         style: {},
-        ...callbacks, // Gán tất cả các hàm callback vào đây
+        ...callbacks,
     }));
 };

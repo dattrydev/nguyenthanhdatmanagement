@@ -21,7 +21,6 @@ export const postColumns: ColumnDef<PostList>[] = [
                 aria-label="Select row"
             />
         ),
-        enableSorting: false,
     },
     {
         id: "title",
@@ -32,25 +31,31 @@ export const postColumns: ColumnDef<PostList>[] = [
         ),
     },
     {
+        id: "status",
         accessorKey: "status",
         header: "Status",
         cell: ({row}) => <div className="lowercase">{row.getValue("status")}</div>,
     },
     {
+        id: "reading_time",
+        accessorKey: "reading_time",
+        header: "Reading Time",
+        cell: ({row}) => row.original.reading_time,
+    },
+    {
+        id: "category",
         accessorKey: "category",
         header: "Category",
         cell: ({row}) => row.original.category_name,
-        enableColumnFilter: true,
     },
     {
+        id: "tags",
         accessorKey: "tags",
         header: "Tags",
         cell: ({row}) => row.original.tags_name,
-        enableColumnFilter: true,
     },
     {
         id: "actions",
-        enableHiding: false,
         cell: ({row}) => {
             const post = row.original;
             return <PostActions post={post}/>;

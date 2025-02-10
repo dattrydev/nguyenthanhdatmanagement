@@ -41,12 +41,25 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
         currentPage: 0,
     });
 
-    const updatePostListPagingRequest = (updates: Partial<PostListPagingRequest>) => {
+
+    const updatePostListPagingRequest = useCallback((updates: Partial<PostListPagingRequest> & {
+        [key: string]: any
+    }) => {
+        const formattedUpdates: Record<string, any> = {};
+
+        Object.keys(updates).forEach((key) => {
+            if (Array.isArray(updates[key])) {
+                formattedUpdates[key] = updates[key].join(",");
+            } else {
+                formattedUpdates[key] = updates[key];
+            }
+        });
+
         setPostListPagingRequest(prev => ({
             ...prev,
-            ...updates
+            ...formattedUpdates
         }));
-    };
+    }, []);
 
     const getPostList = useCallback(async (): Promise<PostList[] | ErrorResponse> => {
         try {

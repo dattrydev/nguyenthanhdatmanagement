@@ -3,14 +3,10 @@ import {
     flexRender,
     getCoreRowModel,
     useReactTable,
-    getFilteredRowModel,
-    ColumnFiltersState,
 } from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {Input} from "@/components/ui/input";
 import {MultiSelect} from "@/components/custom/MultiSelect";
-import * as React from "react";
-import {useState} from "react";
 import {TableFilterConfig} from "@/components/custom/TableFilterConfig";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {ScrollArea} from "@/components/ui/scroll-area";
@@ -20,30 +16,33 @@ interface DataTableProps<TData, TValue> {
     data: TData[];
     tableFilterConfig?: TableFilterConfig[];
     onClickRow?: (row: TData) => void;
+    onChangeFilter?: (filters: Record<string, any>) => void;
 }
+
 
 export function DataTable<TData, TValue>({
                                              columns,
                                              data,
                                              tableFilterConfig = [],
+                                             onChangeFilter,
                                          }: DataTableProps<TData, TValue>) {
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const table = useReactTable({
         data,
         columns,
-        state: {
-            columnFilters,
-        },
         getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        onColumnFiltersChange: setColumnFilters,
     });
 
+    const handleFilterChange = (key: string, value: any) => {
+        if (onChangeFilter) {
+            onChangeFilter({[key]: value});
+        }
+    };
+
     return (
-        <div className="rounded-md border">
-            <ScrollArea className={"max-h-[650px] overflow-auto"}>
+        <div className="rounded-md border ">
+            <ScrollArea className={"h-[625px]"}>
                 <Table>
-                    <TableHeader className={"sticky top-0"}>
+                    <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
@@ -56,7 +55,7 @@ export function DataTable<TData, TValue>({
                     </TableHeader>
 
                     <TableBody>
-                        <TableRow>
+                        <TableRow className={"sticky top-9 bg-secondary z-10"}>
                             {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => {
                                     const filterConfig = tableFilterConfig.find((config) => config.key === header.column.id);
@@ -67,19 +66,40 @@ export function DataTable<TData, TValue>({
                                             {filterConfig.type === "text" && (
                                                 <Input
                                                     value={(header.column.getFilterValue() as string) ?? ""}
-                                                    onChange={(e) => header.column.setFilterValue(e.target.value)}
+                                                    onChange={(e) => {
+                                                        header.column.setFilterValue(e.target.value);
+                                                        handleFilterChange(filterConfig.key, e.target.value);
+                                                    }}
                                                     placeholder={filterConfig.placeholder || `Search ${header.column.id}`}
                                                 />
                                             )}
 
+                                            {
+                                                filterConfig.type === "number" && (
+                                                    <Input
+                                                        value={(header.column.getFilterValue() as string) ?? ""}
+                                                        onChange={(e) => {
+                                                            header.column.setFilterValue(e.target.value);
+                                                            handleFilterChange(filterConfig.key, e.target.value);
+                                                        }}
+                                                        type="number"
+                                                        placeholder={filterConfig.placeholder || `Search ${header.column.id}`}
+                                                    />
+                                                )
+                                            }
+
                                             {filterConfig.type === "select" && filterConfig.options && (
                                                 <Select
                                                     value={header.column.getFilterValue() as string}
-                                                    onValueChange={(value) => header.column.setFilterValue(value)}
+                                                    onValueChange={(value) => {
+                                                        header.column.setFilterValue(value);
+                                                        handleFilterChange(filterConfig.key, value);
+                                                    }}
                                                 >
                                                     <SelectTrigger className="h-8 w-[150px]">
                                                         <SelectValue
-                                                            placeholder={filterConfig.placeholder || `Select ${header.column.id}`}/>
+                                                            placeholder={filterConfig.placeholder || `Select ${header.column.id}`}
+                                                        />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {filterConfig.options.map((option) => (
@@ -94,11 +114,15 @@ export function DataTable<TData, TValue>({
                                             {filterConfig.type === "multi-select" && filterConfig.options && (
                                                 <MultiSelect
                                                     options={filterConfig.options}
-                                                    onValueChange={(values) => header.column.setFilterValue(values)}
-                                                    defaultValue={filterConfig.defaultValue ? [filterConfig.defaultValue] : []}
+                                                    onValueChange={(values) => {
+                                                        header.column.setFilterValue(values);
+                                                        handleFilterChange(filterConfig.key, values);
+                                                    }}
+                                                    value={header.column.getFilterValue() as string[] || []}
                                                     placeholder={filterConfig.placeholder || `Select ${header.column.id}`}
                                                 />
                                             )}
+
                                         </TableCell>
                                     );
                                 })
