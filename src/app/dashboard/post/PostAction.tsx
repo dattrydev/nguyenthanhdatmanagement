@@ -1,4 +1,3 @@
-// PostActions.tsx
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {MoreHorizontal} from "lucide-react";
@@ -24,11 +23,11 @@ export const PostActions = ({post}: PostActionsProps) => {
 
     const handleDelete = () => {
         deletePost(post.id);
-        setOpenDeleteDialog(false); // Close the dialog after confirming
+        setOpenDeleteDialog(false);
     };
 
     return (
-        <div className={""}>
+        <div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
@@ -38,11 +37,23 @@ export const PostActions = ({post}: PostActionsProps) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => navigator.clipboard.writeText(post.slug)}>
+                    <DropdownMenuItem
+                        className={"cursor-pointer"}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(post.slug);
+                        }}
+                    >
                         Copy slug
                     </DropdownMenuItem>
                     <DropdownMenuSeparator/>
-                    <DropdownMenuItem onClick={() => setOpenDeleteDialog(true)}>
+                    <DropdownMenuItem
+                        className={"cursor-pointer text-red-500"}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDeleteDialog(true);
+                        }}
+                    >
                         Delete Post
                     </DropdownMenuItem>
                 </DropdownMenuContent>

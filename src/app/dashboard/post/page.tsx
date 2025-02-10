@@ -1,6 +1,6 @@
 "use client";
 
-import {columnsConfig} from "@/app/dashboard/post/columns-config";
+import {postColumns} from "@/app/dashboard/post/postColumns";
 import * as React from "react";
 import {
     ColumnFiltersState,
@@ -10,9 +10,9 @@ import {
     useReactTable,
     VisibilityState
 } from "@tanstack/react-table";
-import {Footer} from "@/app/dashboard/post/footer";
+import {TableFooter} from "@/app/dashboard/post/TableFooter";
 import {DataTable} from "@/components/custom/DataTable";
-import {Header} from "@/app/dashboard/post/header";
+import {TableHeader} from "@/app/dashboard/post/TableHeader";
 import {usePostContext} from "@/context/PostContext";
 import {useMemo, useEffect} from "react";
 import {getTableFilterConfig} from "@/components/custom/TableFilterConfig";
@@ -39,7 +39,7 @@ export default function Page() {
 
     const table = useReactTable({
         data: postListData,
-        columns: columnsConfig,
+        columns: postColumns,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
@@ -95,14 +95,14 @@ export default function Page() {
 
     return (
         <div className={"flex flex-col gap-3"}>
-            <Header/>
+            <TableHeader/>
             <DataTable
-                columns={columnsConfig}
+                columns={postColumns}
                 data={postListData}
                 tableFilterConfig={tableFilterConfig}
                 onClickRow={onClickRow}
             />
-            <Footer table={table}/>
+            <TableFooter table={table}/>
         </div>
     );
 }

@@ -4,7 +4,7 @@ import * as React from "react";
 import {Checkbox} from "@/components/ui/checkbox";
 import {PostActions} from "@/app/dashboard/post/PostAction";
 
-export const columnsConfig: ColumnDef<PostList>[] = [
+export const postColumns: ColumnDef<PostList>[] = [
     {
         id: "select",
         header: ({table}) => (

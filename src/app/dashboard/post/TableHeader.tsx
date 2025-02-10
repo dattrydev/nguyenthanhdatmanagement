@@ -3,7 +3,7 @@ import {Button} from "@/components/ui/button";
 import {useCallback} from "react";
 import {useRouter} from "next/navigation";
 
-export const Header = () => {
+export const TableHeader = () => {
     const router = useRouter();
 
     const handleCreatePost = useCallback(() => {

@@ -1,26 +1,38 @@
-import {Dialog, DialogContent, DialogTitle} from "@/components/ui/dialog";
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
 
 type DeleteDialogProps = {
     open: boolean;
-    onClose: () => void;
+    onClose: () => void;  // Không cần event ở đây nữa
     onConfirm: () => void;
     title?: string;
-}
+};
 
 export default function DeleteDialog({open, onClose, onConfirm, title}: DeleteDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogTitle className="">Delete Item</DialogTitle>
             <DialogContent>
-                <div className="text-lg font-semibold">{title ?? "Are you sure you want to delete this item?"}</div>
-                <div className="flex justify-end mt-4">
-                    <button className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 mr-4" onClick={onClose}>
-                        Cancel
-                    </button>
-                    <button className="bg-red-500 text-white rounded-md px-4 py-2" onClick={onConfirm}>
-                        Confirm
-                    </button>
-                </div>
+                <DialogHeader>
+                    <DialogTitle>Delete item</DialogTitle>
+                    <div className="text-lg font-semibold">
+                        {title ?? "Are you sure you want to delete this item?"}
+                    </div>
+                </DialogHeader>
+                <DialogFooter className="flex justify-end">
+                    <DialogClose asChild>
+                        <Button variant="secondary">
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <DialogClose asChild>
+                        <Button variant="destructive" onClick={(e) => {
+                            e.stopPropagation();
+                            onConfirm();
+                        }}>
+                            Confirm
+                        </Button>
+                    </DialogClose>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
