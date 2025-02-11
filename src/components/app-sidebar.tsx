@@ -4,7 +4,6 @@ import {
     Sidebar,
     SidebarContent,
     SidebarGroup,
-    SidebarGroupContent,
     SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
@@ -14,13 +13,12 @@ import {
 } from "@/components/ui/sidebar"
 import Image from "next/image";
 import {sidebarItemList} from "@/config/sidebarItemList";
-
-import {usePathname} from "next/navigation";
 import {useAuthContext} from "@/context/AuthContext";
+import {useRouter} from "next/navigation";
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
     const {user} = useAuthContext();
-    const pathname = usePathname();
+    const router = useRouter();
 
     return (
         <Sidebar {...props}>
@@ -36,20 +34,16 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 {sidebarItemList.map((item) => (
                     <SidebarGroup key={item.title}>
                         <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {item.items?.map((subItem) => {
-                                    const isActive = pathname === subItem.url;
-                                    return (
-                                        <SidebarMenuItem key={subItem.title}>
-                                            <SidebarMenuButton asChild isActive={isActive}>
-                                                <a href={subItem.url}>{subItem.title}</a>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    );
-                                })}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
+                        <SidebarMenu>
+                            {item.items?.map((subItem) => (
+                                <SidebarMenuItem key={subItem.title}>
+                                    <SidebarMenuButton tooltip={subItem.title} onClick={() => router.push(subItem.url)}>
+                                        {subItem.icon && <subItem.icon/>}
+                                        <span>{subItem.title}</span>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
                     </SidebarGroup>
                 ))}
             </SidebarContent>
