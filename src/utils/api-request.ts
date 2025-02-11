@@ -45,13 +45,14 @@ const apiRequest = async (method: string, query: string, body?: any, isFormData?
         });
 
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
         console.log("API request failed:", error);
         toast({
             title: "Error",
             description: "An error occurred while processing the request.",
             variant: "destructive",
         })
+        return error.response.data;
     }
 };
 

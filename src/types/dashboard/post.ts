@@ -26,15 +26,15 @@ export interface Post {
     tags: Tag[];
 }
 
-export type PostList = Pick<Post, "id" | "title" | "status" | "reading_time" | "slug"> & {
+export type CategoryList = Pick<Post, "id" | "title" | "status" | "reading_time" | "slug"> & {
     category_name: string;
     tags_name: string;
 }
 
-export type PostListPagingRequest = Partial<PagingRequest & PostList>;
+export type PostListPagingRequest = Partial<PagingRequest & CategoryList>;
 
 export interface PostListResponse extends PagingResponse {
-    posts: PostList[];
+    posts: CategoryList[];
 }
 
 export type CreatePost = Pick<Post, "title" | "content" | "status"> & {

@@ -1,6 +1,6 @@
 import {Button} from "@/components/ui/button";
 import {usePostContext} from "@/context/PostContext";
-import {PostList} from "@/types/dashboard/post";
+import {CategoryList} from "@/types/dashboard/post";
 import {useRouter} from "next/navigation";
 import {
     Dialog, DialogClose,
@@ -11,9 +11,10 @@ import {
     DialogTitle, DialogTrigger
 } from "@/components/ui/dialog";
 import {toast} from "@/hooks/use-toast";
+import {isErrorResponse} from "@/types/error/error-response";
 
 type PostActionsProps = {
-    post: PostList;
+    post: CategoryList;
 };
 
 export const PostActions = ({post}: PostActionsProps) => {
@@ -21,15 +22,29 @@ export const PostActions = ({post}: PostActionsProps) => {
 
     const router = useRouter();
 
-    const handleDelete = (postId: string) => {
-        deletePost(postId).then(() =>
+    const handleDelete = async (postId: string) => {
+        try {
+            const response = await deletePost(postId);
+
+            if (isErrorResponse(response)) {
+                throw new Error(response.message || "An error occurred while deleting the post.");
+            }
+
             toast({
                 title: "Post deleted successfully.",
                 description: "The post has been deleted successfully.",
-            }));
+            });
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error?.message || "Error deleting the post.",
+                variant: "destructive",
+            });
+        }
     };
 
-    const handleEdit = (row: PostList) => {
+
+    const handleEdit = (row: CategoryList) => {
         router.push(`/dashboard/post/${row.slug}`);
     }
 

@@ -15,10 +15,12 @@ import Image from "next/image";
 import {sidebarItemList} from "@/config/sidebarItemList";
 import {useAuthContext} from "@/context/AuthContext";
 import {useRouter} from "next/navigation";
+import {usePathname} from "next/navigation";
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
     const {user} = useAuthContext();
     const router = useRouter();
+    const pathname = usePathname();
 
     return (
         <Sidebar {...props}>
@@ -37,7 +39,11 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenu>
                             {item.items?.map((subItem) => (
                                 <SidebarMenuItem key={subItem.title}>
-                                    <SidebarMenuButton tooltip={subItem.title} onClick={() => router.push(subItem.url)}>
+                                    <SidebarMenuButton
+                                        tooltip={subItem.title}
+                                        onClick={() => router.push(subItem.url)}
+                                        className={pathname.startsWith(subItem.url) ? "bg-gray-200" : ""}
+                                    >
                                         {subItem.icon && <subItem.icon/>}
                                         <span>{subItem.title}</span>
                                     </SidebarMenuButton>

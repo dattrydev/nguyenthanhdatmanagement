@@ -1,7 +1,7 @@
 "use client";
 
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
-import {CreatePost, Post, PostList, PostListPagingRequest, UpdatePost} from "@/types/dashboard/post";
+import {CreatePost, Post, CategoryList, PostListPagingRequest, UpdatePost} from "@/types/dashboard/post";
 import {
     checkUniquePostApi,
     createPostApi,
@@ -11,17 +11,17 @@ import {
     updatePostApi
 } from "@/api/post";
 import {PagingResponse} from "@/types/paging";
-import {ErrorResponse} from "@/types/error/error-response";
+import {ErrorResponse, isErrorResponse} from "@/types/error/error-response";
 import {handleError} from "@/utils/handle-error";
 import {useDebounce} from "use-debounce";
 
 interface PostContextType {
-    postList: PostList[];
+    postList: CategoryList[];
     postListPagingRequest: PostListPagingRequest;
     updatePostListPagingRequest: (updates: Partial<PostListPagingRequest>) => void;
     paging: PagingResponse;
 
-    getPostList: () => Promise<PostList[] | ErrorResponse>;
+    getPostList: () => Promise<CategoryList[] | ErrorResponse>;
     getPostBySlug: (slug: string) => Promise<Post | ErrorResponse>;
     checkUniquePost: (field: string, value: string) => Promise<boolean | ErrorResponse>;
 
@@ -34,7 +34,7 @@ interface PostContextType {
 export const PostContext = createContext<PostContextType | undefined>(undefined);
 
 export const PostProvider = ({children}: { children: ReactNode }) => {
-    const [postList, setPostList] = useState<PostList[]>([]);
+    const [postList, setPostList] = useState<CategoryList[]>([]);
     const [postListPagingRequest, setPostListPagingRequest] = useState<PostListPagingRequest>({});
     const [debouncedPostListPagingRequest] = useDebounce(postListPagingRequest, 500);
 
@@ -62,31 +62,45 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
         }));
     }, []);
 
-    const getPostList = useCallback(async (): Promise<PostList[] | ErrorResponse> => {
+    const getPostList = useCallback(async (): Promise<CategoryList[] | ErrorResponse> => {
         try {
             const response = await getPostListApi(debouncedPostListPagingRequest);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
             setPostList(response.posts);
             return response.posts;
         } catch (error) {
-            console.error("Error in getPostListApi:", error);
+            console.log("Error in getPostListApi:", error);
             return handleError(error);
         }
     }, [debouncedPostListPagingRequest]);
 
     const getPostBySlug = useCallback(async (slug: string): Promise<Post | ErrorResponse> => {
         try {
-            return await getPostBySlugApi(slug);
+            const response = await getPostBySlugApi(slug);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
+            return response;
         } catch (error) {
-            console.error("Error in getPostBySlugApi:", error);
+            console.log("Error in getPostBySlugApi:", error);
             return handleError(error);
         }
     }, []);
 
     const checkUniquePost = useCallback(async (field: string, value: string): Promise<boolean | ErrorResponse> => {
         try {
-            return await checkUniquePostApi(field, value);
+            const response = await checkUniquePostApi(field, value);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
+            return response;
         } catch (error) {
-            console.error("Error in checkUniquePostApi:", error);
+            console.log("Error in checkUniquePostApi:", error);
             return handleError(error);
         }
     }, []);
@@ -94,16 +108,18 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
     const createPost = useCallback(async (createPost: CreatePost): Promise<Post | ErrorResponse> => {
         try {
             const response = await createPostApi(createPost);
-
-            if (response && "id" in response) {
-                const newPost: PostList = {
-                    ...response,
-                    category_name: response.category.name,
-                    tags_name: response.tags.map(tag => tag.name).join(", "),
-                };
-
-                setPostList((prev) => [newPost, ...prev]);
+            if (isErrorResponse(response)) {
+                return handleError(response);
             }
+
+            const newPost: CategoryList = {
+                ...response,
+                category_name: response.category.name,
+                tags_name: response.tags.map(tag => tag.name).join(", "),
+            };
+
+            setPostList((prev) => [newPost, ...prev]);
+
             return response;
         } catch (error) {
             console.log("Error creating post:", error);
@@ -114,43 +130,54 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
     const updatePost = useCallback(async (id: string, updatePost: UpdatePost): Promise<Post | ErrorResponse> => {
         try {
             const response = await updatePostApi(id, updatePost);
-            if (response) {
-                const updatedPostList = postList.map(post => {
-                    if (post.id === id) {
-                        return {
-                            ...post,
-                            ...response,
-                            category_name: response.category.name,
-                            tags_name: response.tags.map(tag => tag.name).join(", "),
-                        };
-                    }
-                    return post;
-                });
-                setPostList(updatedPostList);
+            if (isErrorResponse(response)) {
+                return handleError(response);
             }
+
+            const updatedPostList = postList.map(post => {
+                if (post.id === id) {
+                    return {
+                        ...post,
+                        ...response,
+                        category_name: response.category.name,
+                        tags_name: response.tags.map(tag => tag.name).join(", "),
+                    };
+                }
+                return post;
+            });
+            setPostList(updatedPostList);
+
             return response;
         } catch (error) {
-            console.error("Error in updatePostApi:", error);
+            console.log("Error in updatePostApi:", error);
             return handleError(error);
         }
     }, [postList]);
 
     const deletePost = useCallback(async (id: string): Promise<void | ErrorResponse> => {
         try {
-            await deletePostApi(id);
+            const response = await deletePostApi(id);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
             setPostList((prev) => prev.filter(post => post.id !== id));
         } catch (error) {
-            console.error("Error in deletePostApi:", error);
+            console.log("Error in deletePostApi:", error);
             return handleError(error);
         }
     }, []);
 
     const deletePosts = useCallback(async (ids: string[]): Promise<void | ErrorResponse> => {
         try {
-            await Promise.all(ids.map(id => deletePostsApi([id])));
+            const response = await Promise.all(ids.map(id => deletePostsApi([id])));
+            if (response.some(isErrorResponse)) {
+                return handleError(response.find(isErrorResponse));
+            }
+
             setPostList((prev) => prev.filter(post => !ids.includes(post.id)));
         } catch (error) {
-            console.error("Error in deletePosts:", error);
+            console.log("Error in deletePosts:", error);
             return handleError(error);
         }
     }, []);
@@ -158,9 +185,10 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
     useEffect(() => {
         const fetchPostList = async () => {
             const postListPagingResponse = await getPostListApi(postListPagingRequest);
-            if ("status" in postListPagingResponse) {
-                return;
+            if (isErrorResponse(postListPagingResponse)) {
+                return handleError(postListPagingResponse);
             }
+
             setPostList(postListPagingResponse.posts);
             setPaging({
                 totalPages: postListPagingResponse.totalPages,
@@ -182,7 +210,7 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
                 getPostList,
                 getPostBySlug,
                 checkUniquePost,
-                
+
                 createPost,
                 updatePost,
                 deletePost,

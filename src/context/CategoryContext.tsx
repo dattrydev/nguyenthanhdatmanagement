@@ -1,68 +1,199 @@
 "use client";
 
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
-import {ErrorResponse} from "@/types/error/error-response";
+import {ErrorResponse, isErrorResponse} from "@/types/error/error-response";
 import {PagingResponse} from "@/types/paging";
-import {Category} from "@/types/dashboard/category";
-import {createCategoryApi, getCategoryListApi} from "@/api/category";
+import {
+    Tag,
+    CategoryList,
+    CategoryListPagingRequest,
+    CreateCategory,
+    UpdateCategory
+} from "@/types/dashboard/category";
+import {
+    checkUniqueCategoryApi,
+    createCategoryApi, deleteCategoriesApi, deleteCategoryApi,
+    getCategoryBySlugApi,
+    getCategoryListApi,
+    updateCategoryApi
+} from "@/api/category";
+import {useDebounce} from "use-debounce";
+import {handleError} from "@/utils/handle-error";
 
 interface CategoryContextType {
-    categoryList: Category[];
+    categoryList: CategoryList[];
+    categoryListPagingRequest: CategoryListPagingRequest;
+    updateCategoryListPagingRequest: (updates: Partial<CategoryListPagingRequest>) => void;
     paging: PagingResponse;
 
-    getCategoryList: () => Promise<Category[] | ErrorResponse>;
-    createCategory: (categoryData: Category) => Promise<Category | ErrorResponse>;
+    getCategoryList: () => Promise<CategoryList[] | ErrorResponse>;
+    getCategoryBySlug: (slug: string) => Promise<Tag | ErrorResponse>;
+    checkUniqueCategory: (field: string, value: string) => Promise<boolean | ErrorResponse>;
+
+    createCategory: (categoryData: CreateCategory) => Promise<Tag | ErrorResponse>;
+    updateCategory: (id: string, categoryData: UpdateCategory) => Promise<Tag | ErrorResponse>;
+    deleteCategory: (id: string) => Promise<void | ErrorResponse>;
+    deleteCategories: (ids: string[]) => Promise<void | ErrorResponse>;
 }
 
 export const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
 
 export const CategoryProvider = ({children}: { children: ReactNode }) => {
-    const [categoryList, setCategoryList] = useState<Category[]>([]);
+    const [categoryList, setCategoryList] = useState<CategoryList[]>([]);
+    const [categoryListPagingRequest, setCategoryListPagingRequest] = useState<CategoryListPagingRequest>({});
+    const [debouncedCategoryListPagingRequest] = useDebounce(categoryListPagingRequest, 500);
+
     const [paging, setPaging] = useState<PagingResponse>({
         totalPages: 0,
-        totalRecords: 0,
         currentPage: 0,
     });
 
-    const getCategoryList = useCallback(async () => {
-        const response = await getCategoryListApi();
-        if ("status" in response) {
-            console.error("Error fetching categories:", response.message);
-            return response;
-        }
-        setCategoryList(response.categories);
-        return response.categories;
+    const updateCategoryListPagingRequest = useCallback((updates: Partial<CategoryListPagingRequest> & {
+        [key: string]: any
+    }) => {
+        const formattedUpdates: Record<string, any> = {};
+
+        Object.keys(updates).forEach((key) => {
+            if (Array.isArray(updates[key])) {
+                formattedUpdates[key] = updates[key].join(",");
+            } else {
+                formattedUpdates[key] = updates[key];
+            }
+        });
+
+        setCategoryListPagingRequest(prev => ({
+            ...prev,
+            ...formattedUpdates,
+        }));
     }, []);
 
-    const createCategory = useCallback(async (categoryData: Category) => {
-        const response = await createCategoryApi(categoryData);
-        if ("status" in response) {
-            console.error("Error creating category:", response);
+    const getCategoryList = useCallback(async (): Promise<Tag[] | ErrorResponse> => {
+        try {
+            const response = await getCategoryListApi(debouncedCategoryListPagingRequest);
+
+            setCategoryList(response.categories);
+            return response.categories;
+        } catch (error) {
+            console.log("Error getting category list:", error);
+            return handleError(error);
+        }
+    }, [debouncedCategoryListPagingRequest]);
+
+    const getCategoryBySlug = useCallback(async (slug: string): Promise<Tag | ErrorResponse> => {
+        try {
+            const response = await getCategoryBySlugApi(slug);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
             return response;
+        } catch (error) {
+            console.log("Error getting category by slug:", error);
+            return handleError(error);
+        }
+    }, []);
+
+    const checkUniqueCategory = useCallback(async (field: string, value: string): Promise<boolean | ErrorResponse> => {
+        try {
+            const response = await checkUniqueCategoryApi(field, value);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
+            return response;
+        } catch (error) {
+            console.log("Error checking unique category:", error);
+            return handleError(error);
+        }
+    }, []);
+
+    const createCategory = useCallback(async (categoryData: CreateCategory): Promise<Tag | ErrorResponse> => {
+        const response = await createCategoryApi(categoryData);
+        if (isErrorResponse(response)) {
+            return handleError(response);
         }
         setCategoryList((prev) => [response, ...prev]);
         return response;
     }, []);
 
+    const updateCategory = useCallback(async (id: string, categoryData: UpdateCategory): Promise<Tag | ErrorResponse> => {
+        try {
+            const response = await updateCategoryApi(id, categoryData);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
+            setCategoryList((prev) => prev.map((category) => category.id === id ? response : category));
+            return response;
+        } catch (error) {
+            console.log("Error updating category:", error);
+            return handleError(error);
+        }
+    }, []);
+
+    const deleteCategory = useCallback(async (id: string): Promise<void | ErrorResponse> => {
+        try {
+            const response = await deleteCategoryApi(id);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
+            setCategoryList((prev) => prev.filter((category) => category.id !== id));
+            return response;
+        } catch (error) {
+            console.log("Error deleting category:", error);
+            return handleError(error);
+        }
+    }, []);
+
+    const deleteCategories = useCallback(async (ids: string[]): Promise<void | ErrorResponse> => {
+        try {
+            const response = await deleteCategoriesApi(ids);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
+            setCategoryList((prev) => prev.filter((category) => !ids.includes(category.id)));
+            return response;
+        } catch (error) {
+            console.log("Error deleting categories:", error);
+            return handleError(error);
+        }
+    }, []);
+
     useEffect(() => {
         const fetchCategoryList = async () => {
-            const categoryListPagingResponse = await getCategoryListApi();
-            if ("status" in categoryListPagingResponse) {
-                return;
+            const categoryListPagingResponse = await getCategoryListApi(categoryListPagingRequest);
+            if (isErrorResponse(categoryListPagingResponse)) {
+                return handleError(categoryListPagingResponse);
             }
+
             setCategoryList(categoryListPagingResponse.categories);
             setPaging({
                 totalPages: categoryListPagingResponse.totalPages,
-                totalRecords: categoryListPagingResponse.totalRecords,
                 currentPage: categoryListPagingResponse.currentPage,
             });
         };
 
         fetchCategoryList();
-    }, [getCategoryList]);
+    }, [categoryListPagingRequest, getCategoryList]);
 
     return (
-        <CategoryContext.Provider value={{categoryList, paging, getCategoryList, createCategory}}>
+        <CategoryContext.Provider value={{
+            categoryList,
+            categoryListPagingRequest,
+            updateCategoryListPagingRequest,
+            paging,
+
+            getCategoryList,
+            getCategoryBySlug,
+            checkUniqueCategory,
+
+            createCategory,
+            updateCategory,
+            deleteCategory,
+            deleteCategories,
+        }}>
             {children}
         </CategoryContext.Provider>
     );

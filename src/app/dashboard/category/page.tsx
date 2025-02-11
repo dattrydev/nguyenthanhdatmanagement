@@ -1,53 +1,53 @@
 "use client";
 
-import {postColumns} from "@/app/dashboard/post/postColumns";
 import * as React from "react";
 import {
     getCoreRowModel,
     useReactTable,
 } from "@tanstack/react-table";
 import {DataTable} from "@/components/custom/DataTable";
-import {TableHeader} from "@/app/dashboard/post/TableHeader";
-import {usePostContext} from "@/context/PostContext";
+import {TableHeader} from "@/app/dashboard/category/TableHeader";
 import {useMemo, useEffect, useCallback, useState} from "react";
 import {getTableFilterConfig} from "@/components/custom/TableFilterConfig";
-import {PostStatusOptions} from "@/types/dashboard/post";
 import {useCategoryContext} from "@/context/CategoryContext";
-import {useTagContext} from "@/context/TagContext";
 import {DataTablePagination} from "@/components/custom/DataTablePagination";
 import {useRouter} from "next/navigation";
 import {toast} from "@/hooks/use-toast";
+import {categoryColumns} from "@/app/dashboard/category/categoryColumns";
 import {isErrorResponse} from "@/types/error/error-response";
 
 export default function Page() {
-    const {postList, paging, updatePostListPagingRequest, deletePosts} = usePostContext();
-    const {categoryList} = useCategoryContext();
-    const {tagList} = useTagContext();
+    const {
+        categoryList,
+        paging,
+        updateCategoryListPagingRequest,
+        deleteCategories
+    } = useCategoryContext();
 
     const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
     const [sortColumn, setSortColumn] = useState<string>("");
 
     const router = useRouter();
 
-    const postListData = useMemo(() => {
-        return postList;
-    }, [postList]);
+    const categoryListData = useMemo(() => {
+        return categoryList;
+    }, [categoryList]);
 
     const handlePageChange = useCallback((page: number) => {
-        updatePostListPagingRequest({page});
-    }, [updatePostListPagingRequest]);
+        updateCategoryListPagingRequest({page});
+    }, [updateCategoryListPagingRequest]);
 
     const handlePageSizeChange = useCallback((size: number) => {
-        updatePostListPagingRequest({size});
-    }, [updatePostListPagingRequest]);
+        updateCategoryListPagingRequest({size});
+    }, [updateCategoryListPagingRequest]);
 
-    const handleCreatePost = useCallback(() => {
-        router.push("/dashboard/post/create");
+    const handleCreateCategory = useCallback(() => {
+        router.push("/dashboard/category/create");
     }, [router]);
 
     const table = useReactTable({
-        data: postListData,
-        columns: postColumns,
+        data: categoryListData,
+        columns: categoryColumns,
         getCoreRowModel: getCoreRowModel(),
         onRowSelectionChange: setRowSelection,
         state: {
@@ -58,32 +58,9 @@ export default function Page() {
     const tableFilterConfig = useMemo(() => {
         return (
             getTableFilterConfig([
-                {key: "title", label: "title", type: "text"},
-                {
-                    key: "status",
-                    label: "Status",
-                    type: "multi-select",
-                    options: PostStatusOptions,
-                },
-                {
-                    key: "reading_time",
-                    label: "Reading Time",
-                    type: "number",
-                },
-                {
-                    key: "category",
-                    label: "Category",
-                    type: "multi-select",
-                    options: categoryList.map((category) => ({label: category.name, value: category.id})),
-                },
-                {
-                    key: "tags",
-                    label: "Tags",
-                    type: "multi-select",
-                    options: tagList.map((tag) => ({label: tag.name, value: tag.id})),
-                }
+                {key: "name", label: "Name", type: "text"},
             ]));
-    }, [categoryList, tagList]);
+    }, []);
 
     const handleFilterChange = useCallback((filters: Record<string, any>) => {
         const formattedFilters: Record<string, any> = {};
@@ -96,58 +73,58 @@ export default function Page() {
             }
         });
 
-        updatePostListPagingRequest(formattedFilters);
-    }, [updatePostListPagingRequest]);
+        updateCategoryListPagingRequest(formattedFilters);
+    }, [updateCategoryListPagingRequest]);
 
 
-    const handleDeletePosts = useCallback(async () => {
-        const selectedPostIds = Object.keys(rowSelection);
+    const handleDeleteCategories = useCallback(async () => {
+        const selectedCategoryIds = Object.keys(rowSelection);
 
         try {
-            const response = await deletePosts(selectedPostIds);
+            const response = await deleteCategories(selectedCategoryIds);
 
             if (isErrorResponse(response)) {
-                throw new Error(response.message || "An error occurred while deleting posts.");
+                throw new Error(response.message || "An error occurred while deleting categories.");
             }
 
             toast({
                 title: "Success",
-                description: "Posts deleted successfully.",
+                description: "Categories deleted successfully",
             });
         } catch (error: any) {
             toast({
                 title: "Error",
-                description: error?.message || "Error deleting posts.",
+                description: error.message || "Error deleting categories",
                 variant: "destructive",
             });
         }
-    }, [deletePosts, rowSelection]);
+    }, [deleteCategories, rowSelection]);
 
 
     useEffect(() => {
-        if (postListData) {
+        if (categoryListData) {
             table.setState((prevState) => ({
                 ...prevState,
-                data: postListData,
+                data: categoryListData,
             }));
         }
-    }, [postListData, table]);
+    }, [categoryListData, table]);
 
     useEffect(() => {
         const sortDirection = sortColumn.includes("-") ? "desc" : "asc";
         const sortBy = sortColumn.replace("-", "");
         if (sortColumn) {
-            updatePostListPagingRequest({sortBy, sortDirection});
+            updateCategoryListPagingRequest({sortBy, sortDirection});
         }
-    }, [sortColumn, updatePostListPagingRequest]);
+    }, [sortColumn, updateCategoryListPagingRequest]);
 
     return (
         <div className={"flex flex-col gap-3"}>
-            <TableHeader rowSelection={rowSelection} handleCreatePost={handleCreatePost}
-                         handleDeletePosts={handleDeletePosts}/>
+            <TableHeader rowSelection={rowSelection} handleCreateCategory={handleCreateCategory}
+                         handleDeleteCategorys={handleDeleteCategories}/>
             <DataTable
-                columns={postColumns}
-                data={postListData}
+                columns={categoryColumns}
+                data={categoryListData}
                 tableFilterConfig={tableFilterConfig}
                 onChangeFilter={handleFilterChange}
                 sortColumn={sortColumn}

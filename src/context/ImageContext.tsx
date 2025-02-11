@@ -1,6 +1,6 @@
 "use client";
 
-import {ErrorResponse} from "@/types/error/error-response";
+import {ErrorResponse, isErrorResponse} from "@/types/error/error-response";
 import {ImageRequest, ImageResponse} from "@/types/image";
 import {createContext, ReactNode, useCallback, useContext} from "react";
 import {imageUpload} from "@/api/image-upload";
@@ -15,9 +15,14 @@ export const ImageContext = createContext<ImageContextType | undefined>(undefine
 export const ImageProvider = ({children}: { children: ReactNode }) => {
     const uploadImage = useCallback(async (imageRequest: ImageRequest): Promise<ImageResponse | ErrorResponse> => {
         try {
-            return await imageUpload(imageRequest);
+            const response = await imageUpload(imageRequest);
+            if (isErrorResponse(response)) {
+                return handleError(response);
+            }
+
+            return response;
         } catch (error) {
-            console.error("Error uploading image:", error);
+            console.log("Error uploading image:", error);
             return handleError(error);
         }
     }, []);

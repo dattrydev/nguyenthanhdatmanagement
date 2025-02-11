@@ -72,7 +72,7 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
                     router.push("/login");
                 }
             } catch (error) {
-                console.error("Error validating token:", error);
+                console.log("Error validating token:", error);
                 logout();
             }
 
