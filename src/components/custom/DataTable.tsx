@@ -12,7 +12,7 @@ import {TableFilterConfig} from "@/components/custom/TableFilterConfig";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {FaArrowUp, FaArrowDown} from "react-icons/fa";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 
 
 interface DataTableProps<TData, TValue> {
@@ -23,8 +23,8 @@ interface DataTableProps<TData, TValue> {
     onChangeFilter?: (filters: Record<string, any>) => void;
     sortColumn?: string;
     setSortColumn?: (value: string) => void;
-    rowSelection?: string[];
-    setRowSelection?: (value: string[]) => void;
+    rowSelection?: Record<string, boolean>;
+    setRowSelection?: (value: Record<string, boolean>) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -44,18 +44,51 @@ export function DataTable<TData, TValue>({
         getSortedRowModel: getSortedRowModel(),
     });
 
+    const prevDataLength = useRef(data.length);
+    const clearSelectionRef = useRef(false);
+
     const handleFilterChange = (key: string, value: any) => {
         if (onChangeFilter) {
             onChangeFilter({[key]: value});
         }
     };
 
+    const clearRowSelection = () => {
+        table.setState((oldState) => ({
+            ...oldState,
+            rowSelection: {},
+        }));
+        clearSelectionRef.current = true;
+    };
+
     useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        setRowSelection(Object.values(table.getSelectedRowModel().rowsById).map(item => item.original.id))
+        if (data.length !== prevDataLength.current) {
+            if (!clearSelectionRef.current) {
+                clearRowSelection();
+            }
+            prevDataLength.current = data.length;
+        }
+    }, [clearRowSelection, data.length]);
+
+
+    useEffect(() => {
+        if (!setRowSelection) return;
+
+        const selectedIds = Object.values(table.getSelectedRowModel().rowsById).map(
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            (item) => item.original.id
+        );
+
+        const newSelection: Record<string, boolean> = {};
+
+        selectedIds.forEach((id) => {
+            newSelection[id] = true;
+        });
+
+        setRowSelection(newSelection);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [table.getSelectedRowModel().rowsById]);
+    }, [table.getSelectedRowModel().rowsById, data, setRowSelection]);
 
     return (
         <div className="rounded-md border">

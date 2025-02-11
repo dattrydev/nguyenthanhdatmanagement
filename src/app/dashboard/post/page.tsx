@@ -23,7 +23,7 @@ export default function Page() {
     const {categoryList} = useCategoryContext();
     const {tagList} = useTagContext();
 
-    const [rowSelection, setRowSelection] = useState<string[]>([]);
+    const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
     const [sortColumn, setSortColumn] = useState<string>("");
 
     const router = useRouter();
@@ -48,6 +48,10 @@ export default function Page() {
         data: postListData,
         columns: postColumns,
         getCoreRowModel: getCoreRowModel(),
+        onRowSelectionChange: setRowSelection,
+        state: {
+            rowSelection,
+        },
     });
 
     const tableFilterConfig = useMemo(() => {
@@ -94,12 +98,24 @@ export default function Page() {
         updatePostListPagingRequest(formattedFilters);
     }, [updatePostListPagingRequest]);
 
+
     const handleDeletePosts = useCallback(() => {
-        deletePosts(rowSelection).then(() =>
-            toast({
-                title: "Posts deleted successfully",
-                description: "Selected posts have been deleted",
-            }));
+        const selectedPostIds = Object.keys(rowSelection);
+        deletePosts(selectedPostIds)
+            .then(() => {
+                toast({
+                    title: "Success",
+                    description: "Posts deleted successfully",
+                });
+
+            })
+            .catch(() => {
+                toast({
+                    title: "Error",
+                    description: "Error deleting posts",
+                    variant: "destructive",
+                });
+            });
     }, [deletePosts, rowSelection]);
 
     useEffect(() => {
@@ -119,6 +135,9 @@ export default function Page() {
         }
     }, [sortColumn, updatePostListPagingRequest]);
 
+    useEffect(() => {
+        console.log(rowSelection);
+    }, [rowSelection]);
 
     return (
         <div className={"flex flex-col gap-3"}>

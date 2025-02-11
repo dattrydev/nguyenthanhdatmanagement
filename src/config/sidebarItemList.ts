@@ -1,3 +1,5 @@
+"use client";
+
 export type SidebarItem = {
     title: string;
     url: string;
@@ -7,11 +9,11 @@ export type SidebarItem = {
 export const sidebarItemList: SidebarItem[] = [
     {
         title: "Post",
-        url: "#",
+        url: "/dashboard",
         items: [
             {
                 title: "Post List",
-                url: "/dashboard/post/",
+                url: "/dashboard/post",
             },
             {
                 title: "Create Post",

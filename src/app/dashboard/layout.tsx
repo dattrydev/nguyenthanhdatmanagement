@@ -27,7 +27,7 @@ export default function Layout({children}: { children: React.ReactNode }) {
         group.items?.forEach(item => {
             if (pathname.startsWith(item.url)) {
                 breadcrumbItems = [
-                    {title: group.title, url: "#"},
+                    {title: group.title, url: group.url},
                     {title: item.title, url: item.url}
                 ];
             }

@@ -27,7 +27,7 @@ export const postColumns: ColumnDef<PostList>[] = [
         accessorKey: "title",
         header: "Title",
         cell: ({row}) => (
-            <div className="w-full line-clamp-1">{row.getValue("title")}</div>
+            <div className="w-full line-clamp-1 hover:line-clamp-none">{row.getValue("title")}</div>
         ),
         enableSorting: true,
     },
@@ -42,7 +42,10 @@ export const postColumns: ColumnDef<PostList>[] = [
         id: "reading_time",
         accessorKey: "reading_time",
         header: "Reading Time",
-        cell: ({row}) => row.original.reading_time,
+        cell: ({row}) =>
+            <div className={""}>
+                {row.original.reading_time}
+            </div>,
         enableSorting: true,
     },
     {

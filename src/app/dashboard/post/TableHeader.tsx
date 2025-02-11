@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 
 type TableHeaderProps = {
-    rowSelection: string[];
+    rowSelection: Record<string, boolean>;
     handleCreatePost: () => void;
     handleDeletePosts: () => void;
 }
@@ -23,8 +23,8 @@ export const TableHeader = ({rowSelection, handleCreatePost, handleDeletePosts}:
                 <DialogTrigger asChild={true}>
                     <Button
                         variant="destructive"
-                        disabled={rowSelection.length === 0}
-                        className={rowSelection.length === 0 ? "opacity-50 cursor-not-allowed" : ""}
+                        disabled={Object.keys(rowSelection).length === 0}
+                        className={Object.keys(rowSelection).length === 0 ? "opacity-50 cursor-not-allowed" : ""}
                     >
                         Delete Post
                     </Button>
@@ -32,7 +32,7 @@ export const TableHeader = ({rowSelection, handleCreatePost, handleDeletePosts}:
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Delete Post</DialogTitle>
-                        <DialogDescription>{`Are you sure you want to delete ${rowSelection.length} posts?`}</DialogDescription>
+                        <DialogDescription>{`Are you sure you want to delete ${Object.keys(rowSelection).length} posts?`}</DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex justify-end">
                         <DialogClose asChild={true}>

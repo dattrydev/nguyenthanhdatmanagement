@@ -24,7 +24,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
 
     return (
         <Sidebar {...props}>
-            <SidebarHeader className={"flex flex-row items-center"}>
+            <SidebarHeader className={"flex flex-row items-center ml-1"}>
                 <Image src={"/assets/images/sidebar/avatar_rounded.jpg"} alt={"logo"} width={40} height={40}
                        className={"rounded-full"}/>
                 {user && (
