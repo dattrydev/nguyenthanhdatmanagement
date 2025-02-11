@@ -68,7 +68,8 @@ export function DataTable<TData, TValue>({
             }
             prevDataLength.current = data.length;
         }
-    }, [clearRowSelection, data.length]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data.length]);
 
 
     useEffect(() => {
