@@ -6,13 +6,13 @@ import {Input} from "@/components/ui/input";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {UserLogin, userLoginSchema} from "@/types/auth/user";
-import {loginApi} from "@/api/auth/login";
-import {useState} from "react";
+import {useCallback, useState} from "react";
 import {useRouter} from "next/navigation";
 import {useAuthContext} from "@/context/AuthContext";
+import {isErrorResponse} from "@/types/error/error-response";
 
 export default function Page() {
-    const {setToken, setUser} = useAuthContext();
+    const {login} = useAuthContext();
     const {
         register,
         handleSubmit,
@@ -25,21 +25,18 @@ export default function Page() {
     const [serverResponse, setServerResponse] = useState<string | null>(null);
     const [responseSuccess, setResponseSuccess] = useState<boolean | null>(null);
 
-    const onSubmit = async (data: UserLogin) => {
-        const response = await loginApi(data);
+    const onSubmit = useCallback(async (data: UserLogin) => {
+        const response = await login(data.email, data.password);
 
-        if ('token' in response) {
-            setToken(response.token);
-            setUser(response.user);
-            setServerResponse("Login successful");
+        if (!isErrorResponse(response)) {
             setResponseSuccess(true);
+            setServerResponse("Login successful");
             router.push("/dashboard");
         } else {
-            setServerResponse(response.message || "An unexpected error occurred");
             setResponseSuccess(false);
-            console.log("Login failed:", response.message);
+            setServerResponse(response.message);
         }
-    };
+    }, [login, router]);
 
     return (
         <div className="flex justify-center items-center h-screen">

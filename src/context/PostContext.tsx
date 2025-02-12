@@ -1,7 +1,7 @@
 "use client";
 
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
-import {CreatePost, Post, CategoryList, PostListPagingRequest, UpdatePost} from "@/types/dashboard/post";
+import {CreatePost, Post, PostList, PostListPagingRequest, UpdatePost} from "@/types/dashboard/post";
 import {
     checkUniquePostApi,
     createPostApi,
@@ -16,12 +16,12 @@ import {handleError} from "@/utils/handle-error";
 import {useDebounce} from "use-debounce";
 
 interface PostContextType {
-    postList: CategoryList[];
+    postList: PostList[];
     postListPagingRequest: PostListPagingRequest;
     updatePostListPagingRequest: (updates: Partial<PostListPagingRequest>) => void;
     paging: PagingResponse;
 
-    getPostList: () => Promise<CategoryList[] | ErrorResponse>;
+    getPostList: () => Promise<PostList[] | ErrorResponse>;
     getPostBySlug: (slug: string) => Promise<Post | ErrorResponse>;
     checkUniquePost: (field: string, value: string) => Promise<boolean | ErrorResponse>;
 
@@ -34,7 +34,7 @@ interface PostContextType {
 export const PostContext = createContext<PostContextType | undefined>(undefined);
 
 export const PostProvider = ({children}: { children: ReactNode }) => {
-    const [postList, setPostList] = useState<CategoryList[]>([]);
+    const [postList, setPostList] = useState<PostList[]>([]);
     const [postListPagingRequest, setPostListPagingRequest] = useState<PostListPagingRequest>({});
     const [debouncedPostListPagingRequest] = useDebounce(postListPagingRequest, 500);
 
@@ -62,7 +62,7 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
         }));
     }, []);
 
-    const getPostList = useCallback(async (): Promise<CategoryList[] | ErrorResponse> => {
+    const getPostList = useCallback(async (): Promise<PostList[] | ErrorResponse> => {
         try {
             const response = await getPostListApi(debouncedPostListPagingRequest);
             if (isErrorResponse(response)) {
@@ -112,7 +112,7 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
                 return handleError(response);
             }
 
-            const newPost: CategoryList = {
+            const newPost: PostList = {
                 ...response,
                 category_name: response.category.name,
                 tags_name: response.tags.map(tag => tag.name).join(", "),

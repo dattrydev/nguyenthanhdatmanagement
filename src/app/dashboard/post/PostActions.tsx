@@ -1,6 +1,6 @@
 import {Button} from "@/components/ui/button";
 import {usePostContext} from "@/context/PostContext";
-import {CategoryList} from "@/types/dashboard/post";
+import {PostList} from "@/types/dashboard/post";
 import {useRouter} from "next/navigation";
 import {
     Dialog, DialogClose,
@@ -14,7 +14,7 @@ import {toast} from "@/hooks/use-toast";
 import {isErrorResponse} from "@/types/error/error-response";
 
 type PostActionsProps = {
-    post: CategoryList;
+    post: PostList;
 };
 
 export const PostActions = ({post}: PostActionsProps) => {
@@ -44,7 +44,7 @@ export const PostActions = ({post}: PostActionsProps) => {
     };
 
 
-    const handleEdit = (row: CategoryList) => {
+    const handleEdit = (row: PostList) => {
         router.push(`/dashboard/post/${row.slug}`);
     }
 

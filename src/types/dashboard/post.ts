@@ -18,6 +18,7 @@ export const PostStatusOptions = [
 export interface Post {
     id: string;
     title: string;
+    description: string;
     content: string;
     status: PostStatus;
     reading_time: number;
@@ -26,18 +27,18 @@ export interface Post {
     tags: Tag[];
 }
 
-export type CategoryList = Pick<Post, "id" | "title" | "status" | "reading_time" | "slug"> & {
+export type PostList = Pick<Post, "id" | "title" | "status" | "reading_time" | "slug"> & {
     category_name: string;
     tags_name: string;
 }
 
-export type PostListPagingRequest = Partial<PagingRequest & CategoryList>;
+export type PostListPagingRequest = Partial<PagingRequest & PostList>;
 
 export interface PostListResponse extends PagingResponse {
-    posts: CategoryList[];
+    posts: PostList[];
 }
 
-export type CreatePost = Pick<Post, "title" | "content" | "status"> & {
+export type CreatePost = Pick<Post, "title" | "description" | "content" | "status"> & {
     category_id: string;
     tags_id: string[];
 }
@@ -48,6 +49,7 @@ export interface UpdatePost extends CreatePost {
 
 export const createPostSchema = z.object({
     title: z.string().min(1, "Title is required"),
+    description: z.string().min(1, "Description is required"),
     content: z.string()
         .min(10, "Post content must be at least 10 characters")
         .max(10000, "Post content cannot exceed 10000 characters"),

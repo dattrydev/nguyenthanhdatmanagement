@@ -42,7 +42,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                                     <SidebarMenuButton
                                         tooltip={subItem.title}
                                         onClick={() => router.push(subItem.url)}
-                                        className={pathname.startsWith(subItem.url) ? "bg-gray-200" : ""}
+                                        className={pathname === subItem.url ? "bg-gray-200" : ""}
                                     >
                                         {subItem.icon && <subItem.icon/>}
                                         <span>{subItem.title}</span>

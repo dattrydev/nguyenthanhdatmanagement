@@ -26,6 +26,7 @@ export default function Page() {
 
     const [formData, setFormData] = useState<CreatePost>({
         title: "",
+        description: "",
         content: "",
         status: PostStatus.DRAFT,
         category_id: "",
@@ -41,6 +42,10 @@ export default function Page() {
         const isPostTitleUnique = await checkUniquePost("title", formData.title);
         if (!isPostTitleUnique) {
             validationErrors.title = "Title already exists";
+        }
+
+        if (!formData.description) {
+            validationErrors.description = "Description is required";
         }
 
         if (!formData.category_id) {
@@ -94,6 +99,15 @@ export default function Page() {
                             value={formData.title}
                             onChange={(e) =>
                                 setFormData({...formData, title: e.target.value})
+                            }
+                        />
+                    </div>
+                    <div className={"flex flex-col"}>
+                        <label>Description</label>
+                        <Input
+                            value={formData.description}
+                            onChange={(e) =>
+                                setFormData({...formData, description: e.target.value})
                             }
                         />
                     </div>

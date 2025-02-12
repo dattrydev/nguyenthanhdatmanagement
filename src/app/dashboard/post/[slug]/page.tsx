@@ -30,6 +30,7 @@ export default function Page() {
 
     const [formData, setFormData] = useState<UpdatePost>({
         id: "",
+        description: "",
         title: "",
         content: "",
         status: PostStatus.DRAFT,
@@ -93,13 +94,11 @@ export default function Page() {
 
     useEffect(() => {
         const slug = pathname.split("/").pop();
-        console.log("slug", slug);
         if (!slug) return;
 
         const fetchPostData = async () => {
             try {
                 const data = await getPostBySlug(slug);
-                console.log("data", data);
 
                 if (isErrorResponse(data)) {
                     toast({
@@ -151,6 +150,15 @@ export default function Page() {
                             }
                         />
                         {errors.title && <p className="text-red-500">{errors.title}</p>}
+                    </div>
+                    <div className={"flex flex-col"}>
+                        <label>Description</label>
+                        <Input
+                            value={formData.description}
+                            onChange={(e) =>
+                                setFormData({...formData, description: e.target.value})
+                            }
+                        />
                     </div>
 
                     <div className={"flex items-center gap-4"}>

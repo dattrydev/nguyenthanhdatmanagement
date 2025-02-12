@@ -1,10 +1,10 @@
 import {ColumnDef} from "@tanstack/react-table";
-import {CategoryList} from "@/types/dashboard/post";
+import {PostList} from "@/types/dashboard/post";
 import * as React from "react";
 import {Checkbox} from "@/components/ui/checkbox";
 import {PostActions} from "@/app/dashboard/post/PostActions";
 
-export const postColumns: ColumnDef<CategoryList>[] = [
+export const postColumns: ColumnDef<PostList>[] = [
     {
         id: "select",
         header: ({table}) => (

@@ -50,7 +50,7 @@ export default function Page() {
 
     return (
         <main className="flex flex-col gap-2">
-            <label className="text-2xl font-bold">Create Post</label>
+            <label className="text-2xl font-bold">Create Category</label>
             <form onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-4">
                     <div className={"flex flex-col"}>
