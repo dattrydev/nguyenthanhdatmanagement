@@ -4,7 +4,7 @@ import {createContext, ReactNode, useCallback, useContext, useEffect, useState} 
 import {ErrorResponse, isErrorResponse} from "@/types/error/error-response";
 import {PagingResponse} from "@/types/paging";
 import {
-    Tag,
+    Category,
     CategoryList,
     CategoryListPagingRequest,
     CreateCategory,
@@ -27,11 +27,11 @@ interface CategoryContextType {
     paging: PagingResponse;
 
     getCategoryList: () => Promise<CategoryList[] | ErrorResponse>;
-    getCategoryBySlug: (slug: string) => Promise<Tag | ErrorResponse>;
+    getCategoryBySlug: (slug: string) => Promise<Category | ErrorResponse>;
     checkUniqueCategory: (field: string, value: string) => Promise<boolean | ErrorResponse>;
 
-    createCategory: (categoryData: CreateCategory) => Promise<Tag | ErrorResponse>;
-    updateCategory: (id: string, categoryData: UpdateCategory) => Promise<Tag | ErrorResponse>;
+    createCategory: (categoryData: CreateCategory) => Promise<Category | ErrorResponse>;
+    updateCategory: (id: string, categoryData: UpdateCategory) => Promise<Category | ErrorResponse>;
     deleteCategory: (id: string) => Promise<void | ErrorResponse>;
     deleteCategories: (ids: string[]) => Promise<void | ErrorResponse>;
 }
@@ -67,7 +67,7 @@ export const CategoryProvider = ({children}: { children: ReactNode }) => {
         }));
     }, []);
 
-    const getCategoryList = useCallback(async (): Promise<Tag[] | ErrorResponse> => {
+    const getCategoryList = useCallback(async (): Promise<Category[] | ErrorResponse> => {
         try {
             const response = await getCategoryListApi(debouncedCategoryListPagingRequest);
 
@@ -79,7 +79,7 @@ export const CategoryProvider = ({children}: { children: ReactNode }) => {
         }
     }, [debouncedCategoryListPagingRequest]);
 
-    const getCategoryBySlug = useCallback(async (slug: string): Promise<Tag | ErrorResponse> => {
+    const getCategoryBySlug = useCallback(async (slug: string): Promise<Category | ErrorResponse> => {
         try {
             const response = await getCategoryBySlugApi(slug);
             if (isErrorResponse(response)) {
@@ -107,7 +107,7 @@ export const CategoryProvider = ({children}: { children: ReactNode }) => {
         }
     }, []);
 
-    const createCategory = useCallback(async (categoryData: CreateCategory): Promise<Tag | ErrorResponse> => {
+    const createCategory = useCallback(async (categoryData: CreateCategory): Promise<Category | ErrorResponse> => {
         const response = await createCategoryApi(categoryData);
         if (isErrorResponse(response)) {
             return handleError(response);
@@ -116,7 +116,7 @@ export const CategoryProvider = ({children}: { children: ReactNode }) => {
         return response;
     }, []);
 
-    const updateCategory = useCallback(async (id: string, categoryData: UpdateCategory): Promise<Tag | ErrorResponse> => {
+    const updateCategory = useCallback(async (id: string, categoryData: UpdateCategory): Promise<Category | ErrorResponse> => {
         try {
             const response = await updateCategoryApi(id, categoryData);
             if (isErrorResponse(response)) {

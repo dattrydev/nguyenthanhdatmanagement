@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import {toast} from "@/hooks/use-toast";
 import {useCategoryContext} from "@/context/CategoryContext";
-import {Tag} from "@/types/dashboard/category";
+import {Category} from "@/types/dashboard/category";
 import {isErrorResponse} from "@/types/error/error-response";
 
 type CategoryActionProps = {
-    category: Tag;
+    category: Category;
 };
 
 export const CategoryActions = ({category}: CategoryActionProps) => {
@@ -44,7 +44,7 @@ export const CategoryActions = ({category}: CategoryActionProps) => {
     };
 
 
-    const handleEdit = (row: Tag) => {
+    const handleEdit = (row: Category) => {
         router.push(`/dashboard/category/${row.slug}`);
     }
 
