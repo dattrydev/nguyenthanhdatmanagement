@@ -21,15 +21,15 @@ export interface Post {
     description: string;
     content: string;
     status: PostStatus;
-    reading_time: number;
+    readingTime: number;
     slug: string;
     category: Category;
     tags: Tag[];
 }
 
-export type PostList = Pick<Post, "id" | "title" | "status" | "reading_time" | "slug"> & {
-    category_name: string;
-    tags_name: string;
+export type PostList = Pick<Post, "id" | "title" | "status" | "readingTime" | "slug"> & {
+    categoryName: string;
+    tagsName: string;
 }
 
 export type PostListPagingRequest = Partial<PagingRequest & PostList>;
@@ -39,8 +39,8 @@ export interface PostListResponse extends PagingResponse {
 }
 
 export type CreatePost = Pick<Post, "title" | "description" | "content" | "status"> & {
-    category_id: string;
-    tags_id: string[];
+    categoryId: string;
+    tagsId: string[];
 }
 
 export interface UpdatePost extends CreatePost {
@@ -54,8 +54,8 @@ export const createPostSchema = z.object({
         .min(10, "Post content must be at least 10 characters")
         .max(10000, "Post content cannot exceed 10000 characters"),
     status: z.nativeEnum(PostStatus),
-    category_id: z.string().uuid("Category ID must be a valid UUID"),
-    tags_id: z.array(z.string().uuid("Tag ID must be a valid UUID")).min(1, "At least one tag is required"),
+    categoryId: z.string().uuid("Category ID must be a valid UUID"),
+    tagsId: z.array(z.string().uuid("Tag ID must be a valid UUID")).min(1, "At least one tag is required"),
 });
 
 export const validateCreatePost = (data: unknown) => {

@@ -16,9 +16,10 @@ import {sidebarItemList} from "@/config/sidebarItemList";
 import {useAuthContext} from "@/context/AuthContext";
 import {useRouter} from "next/navigation";
 import {usePathname} from "next/navigation";
+import {LuLogOut} from "react-icons/lu";
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-    const {user} = useAuthContext();
+    const {user, logout} = useAuthContext();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -52,6 +53,19 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenu>
                     </SidebarGroup>
                 ))}
+                <SidebarGroup>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                tooltip={"logout"}
+                                onClick={logout}
+                            >
+                                <LuLogOut/>
+                                <span>Logout</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
             </SidebarContent>
             <SidebarRail/>
         </Sidebar>
