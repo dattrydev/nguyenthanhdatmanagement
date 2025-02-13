@@ -19,6 +19,7 @@ import {
 } from "@/api/category";
 import {useDebounce} from "use-debounce";
 import {handleError} from "@/utils/handle-error";
+import {useAuthContext} from "@/context/AuthContext";
 
 interface CategoryContextType {
     categoryList: CategoryList[];
@@ -42,6 +43,7 @@ export const CategoryProvider = ({children}: { children: ReactNode }) => {
     const [categoryList, setCategoryList] = useState<CategoryList[]>([]);
     const [categoryListPagingRequest, setCategoryListPagingRequest] = useState<CategoryListPagingRequest>({});
     const [debouncedCategoryListPagingRequest] = useDebounce(categoryListPagingRequest, 500);
+    const {token} = useAuthContext();
 
     const [paging, setPaging] = useState<PagingResponse>({
         totalPages: 0,
@@ -175,8 +177,10 @@ export const CategoryProvider = ({children}: { children: ReactNode }) => {
             });
         };
 
-        fetchCategoryList();
-    }, [categoryListPagingRequest, getCategoryList]);
+        if (token) {
+            fetchCategoryList();
+        }
+    }, [categoryListPagingRequest, getCategoryList, token]);
 
     return (
         <CategoryContext.Provider value={{

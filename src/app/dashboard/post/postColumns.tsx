@@ -44,7 +44,7 @@ export const postColumns: ColumnDef<PostList>[] = [
         header: "Reading Time",
         cell: ({row}) =>
             <div className={""}>
-                {row.original.reading_time}
+                {row.original.readingTime}
             </div>,
         enableSorting: true,
     },
@@ -52,14 +52,14 @@ export const postColumns: ColumnDef<PostList>[] = [
         id: "category",
         accessorKey: "category",
         header: "Category",
-        cell: ({row}) => row.original.category_name,
+        cell: ({row}) => row.original.categoryName,
         enableSorting: true,
     },
     {
         id: "tags",
         accessorKey: "tags",
         header: "Tags",
-        cell: ({row}) => row.original.tags_name,
+        cell: ({row}) => row.original.tagsName,
         enableSorting: true,
     },
     {

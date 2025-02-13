@@ -29,8 +29,8 @@ export default function Page() {
         description: "",
         content: "",
         status: PostStatus.DRAFT,
-        category_id: "",
-        tags_id: [],
+        categoryId: "",
+        tagsId: [],
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -48,11 +48,11 @@ export default function Page() {
             validationErrors.description = "Description is required";
         }
 
-        if (!formData.category_id) {
+        if (!formData.categoryId) {
             validationErrors.category = "Category is required";
         }
 
-        if (formData.tags_id.length === 0) {
+        if (formData.tagsId.length === 0) {
             validationErrors.tags = "At least one tag is required";
         }
 
@@ -137,11 +137,11 @@ export default function Page() {
                         <div className={"flex flex-col"}>
                             <label>Category</label>
                             <Select
-                                value={formData.category_id}
+                                value={formData.categoryId}
                                 onValueChange={(value) =>
                                     setFormData({
                                         ...formData,
-                                        category_id: value,
+                                        categoryId: value,
                                     })
                                 }
                             >
@@ -165,10 +165,10 @@ export default function Page() {
                                 onValueChange={(selectedTags) =>
                                     setFormData({
                                         ...formData,
-                                        tags_id: selectedTags.map((tag) => tag)
+                                        tagsId: selectedTags.map((tag) => tag)
                                     })
                                 }
-                                defaultValue={formData.tags_id}
+                                defaultValue={formData.tagsId}
                                 placeholder="Select tags"
                                 variant="inverted"
                                 animation={2}

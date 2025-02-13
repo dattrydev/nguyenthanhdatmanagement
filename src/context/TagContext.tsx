@@ -15,6 +15,7 @@ import {
 } from "@/api/tag";
 import {useDebounce} from "use-debounce";
 import {handleError} from "@/utils/handle-error";
+import {useAuthContext} from "@/context/AuthContext";
 
 interface TagContextType {
     tagList: TagList[];
@@ -38,6 +39,7 @@ export const TagProvider = ({children}: { children: ReactNode }) => {
     const [tagList, setTagList] = useState<TagList[]>([]);
     const [tagListPagingRequest, setTagListPagingRequest] = useState<TagListPagingRequest>({});
     const [debouncedTagListPagingRequest] = useDebounce(tagListPagingRequest, 500);
+    const {token} = useAuthContext();
 
     const [paging, setPaging] = useState<PagingResponse>({
         totalPages: 0,
@@ -179,8 +181,10 @@ export const TagProvider = ({children}: { children: ReactNode }) => {
             });
         };
 
-        fetchTagList();
-    }, [debouncedTagListPagingRequest, getTagList]);
+        if (token) {
+            fetchTagList();
+        }
+    }, [debouncedTagListPagingRequest, getTagList, token]);
 
     return (
         <TagContext.Provider value={{

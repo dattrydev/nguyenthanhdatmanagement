@@ -14,6 +14,7 @@ import {PagingResponse} from "@/types/paging";
 import {ErrorResponse, isErrorResponse} from "@/types/error/error-response";
 import {handleError} from "@/utils/handle-error";
 import {useDebounce} from "use-debounce";
+import {useAuthContext} from "@/context/AuthContext";
 
 interface PostContextType {
     postList: PostList[];
@@ -37,6 +38,7 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
     const [postList, setPostList] = useState<PostList[]>([]);
     const [postListPagingRequest, setPostListPagingRequest] = useState<PostListPagingRequest>({});
     const [debouncedPostListPagingRequest] = useDebounce(postListPagingRequest, 500);
+    const {token} = useAuthContext();
 
     const [paging, setPaging] = useState<PagingResponse>({
         totalPages: 0,
@@ -114,8 +116,8 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
 
             const newPost: PostList = {
                 ...response,
-                category_name: response.category.name,
-                tags_name: response.tags.map(tag => tag.name).join(", "),
+                categoryName: response.category.name,
+                tagsName: response.tags.map(tag => tag.name).join(", "),
             };
 
             setPostList((prev) => [newPost, ...prev]);
@@ -196,8 +198,10 @@ export const PostProvider = ({children}: { children: ReactNode }) => {
             });
         };
 
-        fetchPostList();
-    }, [getPostList, postListPagingRequest]);
+        if (token) {
+            fetchPostList();
+        }
+    }, [getPostList, postListPagingRequest, token]);
 
     return (
         <PostContext.Provider

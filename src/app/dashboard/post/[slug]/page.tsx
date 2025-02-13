@@ -34,8 +34,8 @@ export default function Page() {
         title: "",
         content: "",
         status: PostStatus.DRAFT,
-        category_id: "",
-        tags_id: [],
+        categoryId: "",
+        tagsId: [],
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
@@ -53,11 +53,11 @@ export default function Page() {
             }
         }
 
-        if (!formData.category_id) {
+        if (!formData.categoryId) {
             validationErrors.category = "Category is required";
         }
 
-        if (formData.tags_id.length === 0) {
+        if (formData.tagsId.length === 0) {
             validationErrors.tags = "At least one tag is required";
         }
 
@@ -112,8 +112,8 @@ export default function Page() {
 
                 const postData = {
                     ...data,
-                    tags_id: data.tags.map((tag) => tag.id),
-                    category_id: data.category.id,
+                    tagsId: data.tags.map((tag) => tag.id),
+                    categoryId: data.category.id,
                 };
                 setFormData(postData);
                 setCurrentTitle(data.title);
@@ -186,11 +186,11 @@ export default function Page() {
                         <div className={"flex flex-col"}>
                             <label>Category</label>
                             <Select
-                                value={formData.category_id}
+                                value={formData.categoryId}
                                 onValueChange={(value) =>
                                     setFormData({
                                         ...formData,
-                                        category_id: value,
+                                        categoryId: value,
                                     })
                                 }
                             >
@@ -217,7 +217,7 @@ export default function Page() {
                                     onValueChange={(selectedTags) =>
                                         setFormData({
                                             ...formData,
-                                            tags_id: selectedTags.map((tag) => tag),
+                                            tagsId: selectedTags.map((tag) => tag),
                                         })
                                     }
                                     defaultValue={defaultTags}
