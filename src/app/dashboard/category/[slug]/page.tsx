@@ -58,7 +58,6 @@ export default function Page() {
 
     useEffect(() => {
         const slug = pathname.split("/").pop();
-        console.log("slug", slug);
         if (!slug) return;
 
         const fetchCategoryData = async () => {
