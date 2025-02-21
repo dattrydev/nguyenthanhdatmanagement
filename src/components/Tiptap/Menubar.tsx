@@ -126,24 +126,13 @@ export default function Menubar({editor}: Props) {
             <button onClick={toggleStrike} className={editor.isActive("strike") ? "text-blue-500" : ""}>
                 <Strikethrough size={20}/>
             </button>
-            <button
-                onClick={toggleHeading1}
-                className={`p-2 rounded ${editor.isActive("heading", {level: 1}) ? "text-blue-500 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"}`}
-            >
+            <button onClick={toggleHeading1} className={editor.isActive("heading", {level: 1}) ? "text-blue-500" : ""}>
                 <Heading1 size={20}/>
             </button>
-
-            <button
-                onClick={toggleHeading2}
-                className={`p-2 rounded ${editor.isActive("heading", {level: 2}) ? "text-blue-500 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"}`}
-            >
+            <button onClick={toggleHeading2} className={editor.isActive("heading", {level: 2}) ? "text-blue-500" : ""}>
                 <Heading2 size={20}/>
             </button>
-
-            <button
-                onClick={toggleHeading3}
-                className={`p-2 rounded ${editor.isActive("heading", {level: 3}) ? "text-blue-500 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"}`}
-            >
+            <button onClick={toggleHeading3} className={editor.isActive("heading", {level: 3}) ? "text-blue-500" : ""}>
                 <Heading3 size={20}/>
             </button>
             <input type="file" accept="image/*" onChange={addImage} className="hidden" id="imageUpload"/>
